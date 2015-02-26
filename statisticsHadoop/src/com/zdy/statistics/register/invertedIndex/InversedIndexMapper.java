@@ -8,7 +8,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
 
-	private Text outKey;
+	private Text outKey = new Text();
 	
 	@Override
 	protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -18,7 +18,10 @@ public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, LongWr
 		
 		if(values.length == 4){
 			if(values[0].equals("register")){
-				//context.write(, value);
+				
+				outKey.set(values[2]+":"+values[3]);
+				
+				context.write(outKey, new LongWritable(1));
 			}
 		}
 		
