@@ -6,7 +6,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
+public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private Text outKey = new Text();
 	
@@ -21,7 +21,7 @@ public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, LongWr
 				
 				outKey.set(values[2]+":"+values[3]);
 				
-				context.write(outKey, new LongWritable(1));
+				context.write(outKey, new Text("1"));
 			}
 		}
 		

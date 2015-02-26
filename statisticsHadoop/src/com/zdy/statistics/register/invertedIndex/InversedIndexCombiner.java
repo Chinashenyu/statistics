@@ -2,18 +2,17 @@ package com.zdy.statistics.register.invertedIndex;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class InversedIndexCombiner extends Reducer<Text, LongWritable, Text, Text> {
+public class InversedIndexCombiner extends Reducer<Text, Text, Text, Text> {
 
 	@Override
-	protected void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
+	protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 		
 		long count = 0l;
-		for (LongWritable longWritable : values) {
-			count += longWritable.get();
+		for (Text text : values) {
+			count += Long.parseLong(text.toString());
 		}
 		
 		String[] keys = key.toString().split(":");
