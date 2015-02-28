@@ -1,47 +1,41 @@
 package com.zdy.statistics.runJob;
 
-import java.io.IOException;
-
 import org.apache.hadoop.util.ToolRunner;
 
 import com.zdy.statistics.register.RegisterJob;
 import com.zdy.statistics.register.invertedIndex.InvertedIndexJob;
+import com.zdy.statistics.util.DateTimeUtil;
+import com.zdy.statistics.util.PreparedFileUtil;
 
 public class Run {
 
-	public void mongoExporty(){
-		Runtime run = Runtime.getRuntime();
-		
-		try {
-			Process pro = run.exec("mongoexport -d qipai -c server --csv -f type,user_id,login_time -q \"{'user_id':'100000'}\" -o e:\\serverBackup.dat");
-			
-			//pro.getInputStream();
-			if(pro.waitFor() == 0){//0表示 正常终止
-				System.out.println("PROCESS IS NOT WAITING");
-				if(pro.exitValue() == 0){//p.exitValue()==0表示正常结束，1：非正常结束  
-					System.out.println("success");
-					
-				}
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	
-	
-	
 	public static void main(String[] args) {
 		try {
-			int indexResult = ToolRunner.run(new InvertedIndexJob(), args);
-			if(indexResult == 1){
-				int registerResult = ToolRunner.run(new RegisterJob(), args);
+			
+			String host = "192.168.8.124";
+			String port = "27017";
+			String DB = "qipai";
+			String collection = "server";
+			String tile = "type,user_id,dev_id,regisrer_time";
+			String query = "\"{'type':'register'}\"";
+			String mongoOutputPath = "/home/hadoop/mongodata/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
+			
+			String HDFSOutputPath = "statistics/qipai/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
+			
+			PreparedFileUtil pfu = new PreparedFileUtil();
+			boolean result = pfu.loadMongoDBToHDFS(HDFSOutputPath, host, port, DB, collection, tile, query, mongoOutputPath);
+			String[] args1 = {"",""};
+			args1[0] = HDFSOutputPath;
+			args1[1] = "";
+			if(result){
+				int registerResult = ToolRunner.run(new RegisterJob(), args1);
+				if(registerResult == 1){
+					int indexResult = ToolRunner.run(new InvertedIndexJob(), args1);
+					System.out.println("-----------");
+					System.exit(indexResult);
+				}
+			}else{
 				
-				System.exit(registerResult);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

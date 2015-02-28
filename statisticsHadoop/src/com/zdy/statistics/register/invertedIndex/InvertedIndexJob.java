@@ -2,7 +2,9 @@ package com.zdy.statistics.register.invertedIndex;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -20,6 +22,8 @@ public class InvertedIndexJob extends Configured implements Tool{
 	@Override
 	public int run(String[] args) throws Exception {
 		
+		
+		
 		Configuration conf = new Configuration();
 		conf.set("mapreduce.job.jar", "my.jar");
 		
@@ -36,8 +40,14 @@ public class InvertedIndexJob extends Configured implements Tool{
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 		
-		FileInputFormat.setInputPaths(job, new Path("hdfs://hadoop1:9000/test/register/testRegister.txt"));
-		FileOutputFormat.setOutputPath(job, new Path("hdfs://hadoop1:9000/test/register/inversed"));
+		DistributedFileSystem fs = (DistributedFileSystem)FileSystem.get(conf);
+		Path path = new Path("hdfs://hadoop1:9000/statistics/qipai/register/invertedindex");
+		if(fs.exists(path)){
+			fs.delete(path,true);
+		}
+		
+		FileInputFormat.setInputPaths(job, new Path("hdfs://hadoop1:9000/statistics/qipai/register/"));
+		FileOutputFormat.setOutputPath(job, new Path("hdfs://hadoop1:9000/statistics/qipai/register/invertedindex"));
 		
 		return job.waitForCompletion(true)?0:1;
 	}

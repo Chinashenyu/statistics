@@ -48,12 +48,12 @@ public class RegisterJob extends Configured implements Tool {
 		job.setOutputFormatClass(MyDBOutPutFormat.class);
 		
 		
-		job.addCacheFile(new URI("hdfs://hadoop1:9000/test/register/invertedindex.txt"));
+		//job.addCacheFile(new URI("hdfs://hadoop1:9000/statistics/register/invertedindex/part-r-00000"));
 		
-		FileInputFormat.setInputPaths(job, new Path("hdfs://hadoop1:9000/test/register/testRegister.txt"));
+		FileInputFormat.setInputPaths(job, new Path(args[0]));
 		MyDBOutPutFormat.setOutput(job, "register_info", "new_device","day_time");
 		
-		return job.waitForCompletion(true)?0:1;
+		return job.waitForCompletion(true)?1:0;
 
 	}
 

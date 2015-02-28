@@ -48,14 +48,21 @@ public class ResgisterMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 		
 		URI[] paths = context.getCacheFiles();
 		if(paths != null && paths.length > 0){
-			FileSystem fs = FileSystem.get(paths[0], context.getConfiguration());
-			FSDataInputStream in = fs.open(new Path(paths[0]));
-			
-			String line;
-			while((line = in.readLine()) != null){
-				String[] values = line.split(",");
-				reverseIndexMap.put(values[0], values[1]);
+			FileSystem f= FileSystem.get(context.getConfiguration());
+			if(f.exists(new Path(paths[0].toString()))){
+				FileSystem fs = FileSystem.get(paths[0], context.getConfiguration());
+				
+				FSDataInputStream in = fs.open(new Path(paths[0]));
+				
+				String line;
+				while((line = in.readLine()) != null){
+					String[] values = line.split(",");
+					reverseIndexMap.put(values[0], values[1]);
+				}
 			}
+			
+		}else{
+			System.out.println("file is not exists");
 		}
 		
 	}
