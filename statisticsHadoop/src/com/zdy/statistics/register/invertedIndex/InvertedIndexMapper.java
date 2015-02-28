@@ -6,7 +6,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class InversedIndexMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class InvertedIndexMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	private Text outKey = new Text();
 	

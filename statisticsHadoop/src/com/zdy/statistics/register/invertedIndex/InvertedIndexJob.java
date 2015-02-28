@@ -1,4 +1,4 @@
-package com.zdy.statistics.runJob;
+package com.zdy.statistics.register.invertedIndex;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -11,11 +11,11 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.zdy.statistics.register.invertedIndex.InversedIndexCombiner;
-import com.zdy.statistics.register.invertedIndex.InversedIndexMapper;
-import com.zdy.statistics.register.invertedIndex.InversedIndexReducer;
+import com.zdy.statistics.register.invertedIndex.InvertedIndexCombiner;
+import com.zdy.statistics.register.invertedIndex.InvertedIndexMapper;
+import com.zdy.statistics.register.invertedIndex.InvertedIndexReducer;
 
-public class InversedIndexJob extends Configured implements Tool{
+public class InvertedIndexJob extends Configured implements Tool{
 
 	@Override
 	public int run(String[] args) throws Exception {
@@ -24,11 +24,11 @@ public class InversedIndexJob extends Configured implements Tool{
 		conf.set("mapreduce.job.jar", "my.jar");
 		
 		Job job = Job.getInstance(conf);
-		job.setJarByClass(InversedIndexJob.class);
+		job.setJarByClass(InvertedIndexJob.class);
 		
-		job.setMapperClass(InversedIndexMapper.class);
-		job.setCombinerClass(InversedIndexCombiner.class);
-		job.setReducerClass(InversedIndexReducer.class);
+		job.setMapperClass(InvertedIndexMapper.class);
+		job.setCombinerClass(InvertedIndexCombiner.class);
+		job.setReducerClass(InvertedIndexReducer.class);
 		
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(Text.class);
@@ -42,7 +42,7 @@ public class InversedIndexJob extends Configured implements Tool{
 		return job.waitForCompletion(true)?0:1;
 	}
 	
-	public static void main(String[] args) throws Exception {
-		int result = ToolRunner.run(new Configuration(), new InversedIndexJob(), args);
-	}
+//	public static void main(String[] args) throws Exception {
+//		int result = ToolRunner.run(new Configuration(), new InversedIndexJob(), args);
+//	}
 }
