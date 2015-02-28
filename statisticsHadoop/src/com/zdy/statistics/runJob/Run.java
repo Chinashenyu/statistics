@@ -20,7 +20,7 @@ public class Run {
 			String query = "\"{'type':'register'}\"";
 			String mongoOutputPath = "/home/hadoop/mongodata/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
 			
-			String HDFSOutputPath = "statistics/qipai/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
+			String HDFSOutputPath = "hdfs://hadoop1:9000/statistics/qipai/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
 			
 			PreparedFileUtil pfu = new PreparedFileUtil();
 			boolean result = pfu.loadMongoDBToHDFS(HDFSOutputPath, host, port, DB, collection, tile, query, mongoOutputPath);
@@ -31,7 +31,6 @@ public class Run {
 				int registerResult = ToolRunner.run(new RegisterJob(), args1);
 				if(registerResult == 1){
 					int indexResult = ToolRunner.run(new InvertedIndexJob(), args1);
-					System.out.println("-----------");
 					System.exit(indexResult);
 				}
 			}else{

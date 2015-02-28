@@ -48,7 +48,7 @@ public class PreparedFileUtil {
 		
 		Process process = null;
 		try {
-			process = Runtime.getRuntime().exec("mongoexport -h 192.168.8.124:27017 -d qipai -c server --csv -f type,user_id,dev_id,regisrer_time -q {'type':'register'} -o /home/hadoop/mongodata/register/registerBackup-2015-02-27.csv");
+			process = Runtime.getRuntime().exec("mongoexport -h 192.168.8.124:27017 -d qipai -c server --csv -f type,user_id,dev_id,register_time -q {'type':'register'} -o /home/hadoop/mongodata/register/registerBackup-2015-02-27.csv");
 			process.getInputStream().read();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -82,7 +82,7 @@ public class PreparedFileUtil {
 			Path inputPath = new Path(mongoOutputPath);
 			Path outputPath = new Path(HDFSOutputPath);
 			
-			hdfs.copyFromLocalFile(inputPath, outputPath);
+			//hdfs.copyFromLocalFile(inputPath, outputPath);
 			result = true;
 		}
 		

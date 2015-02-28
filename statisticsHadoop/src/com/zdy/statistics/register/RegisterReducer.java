@@ -7,6 +7,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import com.zdy.statistics.util.DateTimeUtil;
+
 public class RegisterReducer extends Reducer<Text, IntWritable, RegisterVo, NullWritable> {
 
 	@Override
@@ -20,8 +22,8 @@ public class RegisterReducer extends Reducer<Text, IntWritable, RegisterVo, Null
 		}
 		
 		rvo.setNewDevice(count);
-		rvo.setDate("2015-02-11");
-		
+		rvo.setDate(DateTimeUtil.getyesterday());
+		System.out.println("-------register reducer--------------------");
 		context.write(rvo, NullWritable.get());
 	}
 
