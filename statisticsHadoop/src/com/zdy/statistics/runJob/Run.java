@@ -16,8 +16,8 @@ public class Run {
 			String port = "27017";
 			String DB = "qipai";
 			String collection = "server";
-			String tile = "type,user_id,dev_id,regisrer_time";
-			String query = "\"{'type':'register'}\"";
+			String tile = "type,user_id,dev_id,register_time";
+			String query = "{'type':'register'}";
 			String mongoOutputPath = "/home/hadoop/mongodata/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";
 			
 			String HDFSOutputPath = "hdfs://hadoop1:9000/statistics/qipai/register/registerBackup-"+DateTimeUtil.getyesterday()+".csv";

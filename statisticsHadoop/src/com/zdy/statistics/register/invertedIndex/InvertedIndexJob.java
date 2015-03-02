@@ -52,7 +52,7 @@ public class InvertedIndexJob extends Configured implements Tool{
 		return job.waitForCompletion(true)?0:1;
 	}
 	
-//	public static void main(String[] args) throws Exception {
-//		int result = ToolRunner.run(new Configuration(), new InversedIndexJob(), args);
-//	}
+	public static void main(String[] args) throws Exception {
+		int result = ToolRunner.run(new Configuration(), new InvertedIndexJob(), args);
+	}
 }

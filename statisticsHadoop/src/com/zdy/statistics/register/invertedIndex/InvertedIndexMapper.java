@@ -15,11 +15,11 @@ public class InvertedIndexMapper extends Mapper<LongWritable, Text, Text, Text> 
 		
 		String line = value.toString();
 		String[] values = line.split(",");
-		
+		System.out.println("============ index mapper ================");
 		if(values.length == 4){
-			if(values[0].equals("register")){
+			if(values[0].equals("\"register\"")){
 				
-				outKey.set(values[2]+":"+values[3]);
+				outKey.set(values[2]+"&"+values[3]);
 				
 				context.write(outKey, new Text("1"));
 			}
