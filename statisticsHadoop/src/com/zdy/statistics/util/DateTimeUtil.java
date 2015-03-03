@@ -20,12 +20,19 @@ public class DateTimeUtil {
 		
 		String yesterday = sdf.format(calendar.getTime());
 		
-		System.out.println(yesterday);
+		
 		return yesterday;
 	}
 	
+//	public static String formatTODate(String dateTime){
+//		
+//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//		return sdf.format(date);
+//	}
+	
 	public static void main(String[] args) {
-		getyesterday();
+		System.out.println(getyesterday());
+//		System.out.println(formatTODate("2015-03-03 23:45:09"));
 	}
 	
 }
