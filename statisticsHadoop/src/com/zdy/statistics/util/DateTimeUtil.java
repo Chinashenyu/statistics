@@ -1,5 +1,6 @@
 package com.zdy.statistics.util;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,6 +25,24 @@ public class DateTimeUtil {
 		return yesterday;
 	}
 	
+	public static int calculateTowDay(String date1,String date2){
+		
+		int betweenDays = 0;
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			Date d1 = sdf.parse(date1);
+			Date d2 = sdf.parse(date2);
+			long d = d1.getTime()-d2.getTime();
+			betweenDays = (int)d/1000/60/60/24;
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return betweenDays;
+	}
+	
 //	public static String formatTODate(String dateTime){
 //		
 //		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -32,7 +51,7 @@ public class DateTimeUtil {
 	
 	public static void main(String[] args) {
 		System.out.println(getyesterday());
-//		System.out.println(formatTODate("2015-03-03 23:45:09"));
+		System.out.println(calculateTowDay("2015-03-05", "2015-03-04"));
 	}
 	
 }
