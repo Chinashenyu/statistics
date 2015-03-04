@@ -23,7 +23,7 @@ public class ActiveMapper1 extends Mapper<LongWritable, Text, Text, IntWritable>
 	@Override
 	protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 		
-		String line = value.toString();
+		String line = value.toString();//line:login,user_id,login_time
 		line.replaceAll("\"", "");
 		String[] loginValues = StringUtils.split(line,',');
 		String userId = loginValues[1];
@@ -32,29 +32,29 @@ public class ActiveMapper1 extends Mapper<LongWritable, Text, Text, IntWritable>
 		if(!hasUserId.containsKey(loginValues[1])){
 			hasUserId.put(userId, null);
 			
-			String keyStr = loginValues[1]+":"+loginTime;
+			String keyStr = userId;
 			
 			int betweenDay = DateTimeUtil.calculateTowDay(today, loginTime);
 			if(betweenDay<=30 && betweenDay>15){
-				context.write(new Text(keyStr+"30"), new IntWritable(1));
+				context.write(new Text(keyStr+":30"), new IntWritable(1));
 			}else if(betweenDay<=15 && betweenDay>7){
-				context.write(new Text(keyStr+"30"), new IntWritable(1));
-				context.write(new Text(keyStr+"15"), new IntWritable(1));
+				context.write(new Text(keyStr+":30"), new IntWritable(1));
+				context.write(new Text(keyStr+":15"), new IntWritable(1));
 			}else if(betweenDay<=7 && betweenDay>5){
-				context.write(new Text(keyStr+"30"), new IntWritable(1));
-				context.write(new Text(keyStr+"15"), new IntWritable(1));
-				context.write(new Text(keyStr+"7"), new IntWritable(1));
+				context.write(new Text(keyStr+":30"), new IntWritable(1));
+				context.write(new Text(keyStr+":15"), new IntWritable(1));
+				context.write(new Text(keyStr+":7"), new IntWritable(1));
 			}else if(betweenDay<=5 && betweenDay>3){
-				context.write(new Text(keyStr+"30"), new IntWritable(1));
-				context.write(new Text(keyStr+"15"), new IntWritable(1));
-				context.write(new Text(keyStr+"7"), new IntWritable(1));
-				context.write(new Text(keyStr+"5"), new IntWritable(1));
+				context.write(new Text(keyStr+":30"), new IntWritable(1));
+				context.write(new Text(keyStr+":15"), new IntWritable(1));
+				context.write(new Text(keyStr+":7"), new IntWritable(1));
+				context.write(new Text(keyStr+":5"), new IntWritable(1));
 			}else{
-				context.write(new Text(keyStr+"30"), new IntWritable(1));
-				context.write(new Text(keyStr+"15"), new IntWritable(1));
-				context.write(new Text(keyStr+"7"), new IntWritable(1));
-				context.write(new Text(keyStr+"5"), new IntWritable(1));
-				context.write(new Text(keyStr+"3"), new IntWritable(1));
+				context.write(new Text(keyStr+":30"), new IntWritable(1));
+				context.write(new Text(keyStr+":15"), new IntWritable(1));
+				context.write(new Text(keyStr+":7"), new IntWritable(1));
+				context.write(new Text(keyStr+":5"), new IntWritable(1));
+				context.write(new Text(keyStr+":3"), new IntWritable(1));
 			}
 		}
 		
