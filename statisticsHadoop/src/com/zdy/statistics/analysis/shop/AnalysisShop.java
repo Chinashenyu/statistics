@@ -35,4 +35,10 @@ public class AnalysisShop {
         return cur.count();
     }
     
+    public void insertResult(){
+    	
+    	
+    	
+    }
+    
 }
