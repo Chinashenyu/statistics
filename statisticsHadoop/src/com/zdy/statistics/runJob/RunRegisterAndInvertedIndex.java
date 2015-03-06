@@ -7,7 +7,7 @@ import com.zdy.statistics.register.invertedIndex.InvertedIndexJob;
 import com.zdy.statistics.util.DateTimeUtil;
 import com.zdy.statistics.util.PreparedFileUtil;
 
-public class Run {
+public class RunRegisterAndInvertedIndex {
 
 	public static void main(String[] args) {
 		try {
