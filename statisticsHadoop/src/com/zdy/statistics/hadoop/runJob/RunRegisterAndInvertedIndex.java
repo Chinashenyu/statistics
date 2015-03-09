@@ -1,9 +1,9 @@
-package com.zdy.statistics.runJob;
+package com.zdy.statistics.hadoop.runJob;
 
 import org.apache.hadoop.util.ToolRunner;
 
-import com.zdy.statistics.register.RegisterJob;
-import com.zdy.statistics.register.invertedIndex.InvertedIndexJob;
+import com.zdy.statistics.hadoop.register.RegisterJob;
+import com.zdy.statistics.hadoop.register.invertedIndex.InvertedIndexJob;
 import com.zdy.statistics.util.DateTimeUtil;
 import com.zdy.statistics.util.PreparedFileUtil;
 

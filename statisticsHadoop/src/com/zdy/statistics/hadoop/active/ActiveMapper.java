@@ -1,4 +1,4 @@
-package com.zdy.statistics.active;
+package com.zdy.statistics.hadoop.active;
 
 import java.io.IOException;
 import java.util.HashMap;

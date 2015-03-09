@@ -1,4 +1,4 @@
-package com.zdy.statistics.runJob;
+package com.zdy.statistics.hadoop.runJob;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

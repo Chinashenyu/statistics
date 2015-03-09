@@ -1,4 +1,4 @@
-package com.zdy.statistics.register.invertedIndex;
+package com.zdy.statistics.hadoop.register.invertedIndex;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -13,9 +13,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import com.zdy.statistics.register.invertedIndex.InvertedIndexCombiner;
-import com.zdy.statistics.register.invertedIndex.InvertedIndexMapper;
-import com.zdy.statistics.register.invertedIndex.InvertedIndexReducer;
+import com.zdy.statistics.hadoop.register.invertedIndex.InvertedIndexCombiner;
+import com.zdy.statistics.hadoop.register.invertedIndex.InvertedIndexMapper;
+import com.zdy.statistics.hadoop.register.invertedIndex.InvertedIndexReducer;
 
 public class InvertedIndexJob extends Configured implements Tool{
 

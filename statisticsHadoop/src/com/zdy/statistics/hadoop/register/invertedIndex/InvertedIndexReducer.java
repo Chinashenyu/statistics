@@ -1,4 +1,4 @@
-package com.zdy.statistics.register.invertedIndex;
+package com.zdy.statistics.hadoop.register.invertedIndex;
 
 import java.io.IOException;
 import java.util.Iterator;

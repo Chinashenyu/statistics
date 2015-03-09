@@ -25,6 +25,12 @@ public class DateTimeUtil {
 		return yesterday;
 	}
 	
+	/**
+	 * 
+	 * @param date1
+	 * @param date2
+	 * @return the mnuber of days between tow dates;
+	 */
 	public static int calculateTowDay(String date1,String date2){
 		
 		int betweenDays = 0;
@@ -43,15 +49,24 @@ public class DateTimeUtil {
 		return betweenDays;
 	}
 	
-//	public static String formatTODate(String dateTime){
-//		
-//		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//		return sdf.format(date);
-//	}
+	/**
+	 * date add or minus
+	 * @param date
+	 * @param days
+	 * @return the date after add or minus ;format : yyyy-MM-dd
+	 */
+	public static String dateCalculate(Date date,int days){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.DAY_OF_MONTH, days);
+		
+		return sdf.format(calendar.getTime());
+	}
 	
 	public static void main(String[] args) {
-		System.out.println(getyesterday());
-		System.out.println(calculateTowDay("2015-03-05", "2015-03-04"));
+		System.out.println(dateCalculate(new Date(),-1));
 	}
 	
 }

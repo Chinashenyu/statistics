@@ -1,4 +1,4 @@
-package com.zdy.statistics.util;
+package com.zdy.statistics.analysis.common;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -22,19 +22,22 @@ public class MysqlConnect {
 			Properties properties = new Properties();
 			properties.load(classLoader.getResourceAsStream("common.properties"));
 			url = properties.getProperty("mysql.url");
-			username = properties.getProperty("username");
-			password = properties.getProperty("password");
+			username = properties.getProperty("mysql.username");
+			password = properties.getProperty("mysql.password");
 			
-			Class.forName("com.mysql.jdbc.driver");
+			System.out.println(username);
+			Class.forName("com.mysql.jdbc.Driver");
 			connection = DriverManager.getConnection(url, username, password);
+			
+			System.out.println("#####database connection success !#####");
 		} catch (SQLException e) {
-			System.out.println("");
+			System.out.println("#####DataBase connection exception !#####");
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			System.out.println("");
+			System.out.println("#####DataBase driver not found exception !#####");
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("");
+			System.out.println("#####DataBase configuration file(common.properties) read exception !#####");
 			e.printStackTrace();
 		}
 		

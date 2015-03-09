@@ -1,4 +1,4 @@
-package com.zdy.statistics.register;
+package com.zdy.statistics.hadoop.register;
 
 import java.io.IOException;
 
