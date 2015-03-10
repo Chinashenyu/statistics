@@ -7,7 +7,7 @@ public class MainRun {
 	
 	
 	public MainRun(){
-		System.out.println("---");
+		
 	}
 	
 	public static void init(){
@@ -15,7 +15,7 @@ public class MainRun {
 	}
 	
 	public static void main(String[] args) {
-		MysqlConnect.getConnection();
+		
 	}
 
 }
