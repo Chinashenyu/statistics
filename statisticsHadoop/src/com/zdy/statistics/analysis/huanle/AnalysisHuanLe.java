@@ -16,9 +16,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
-import com.zdy.statistics.analysis.common.AnalysisEventContrast;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
+import com.zdy.statistics.analysis.contrastCache.EventContrast;
 
 public class AnalysisHuanLe {
 	
@@ -78,7 +78,7 @@ public class AnalysisHuanLe {
 		
 		BasicBSONList res = (BasicBSONList) commandResult.get("retval");
 		
-		Map<Integer,String> eventMap = AnalysisEventContrast.getEventMap();
+		Map<Integer,String> eventMap = EventContrast.getEventMap();
 		
 		Map<String,Double> resMap = new HashMap<String,Double>();
 		for (Object object : res) {
@@ -91,7 +91,7 @@ public class AnalysisHuanLe {
 			if(eventMap.containsKey(eventId)){
 				eventName = eventMap.get(eventId);
 			}else{
-				AnalysisEventContrast.updateEventMap();
+				EventContrast.updateEventMap();
 				if(eventMap.containsKey(eventId)){
 					eventName = eventMap.get(eventId);
 				}else{
@@ -109,6 +109,7 @@ public class AnalysisHuanLe {
 		
 		String sql = " insert into huanle (result_set,type,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
+		
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
@@ -124,9 +125,9 @@ public class AnalysisHuanLe {
 			connection.commit();
 		} catch (SQLException e) {
 			try {
+				System.out.println("-------------------");
 				connection.rollback();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
@@ -135,7 +136,6 @@ public class AnalysisHuanLe {
 				pstmt.close();
 				connection.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
