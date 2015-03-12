@@ -43,16 +43,16 @@ public class EventContrast {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
-//			try {
-//				if(pstmt != null){
-//					pstmt.close();
-//				}
-//				if(connection != null){
-//					connection.close();
-//				}
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
+			try {
+				if(pstmt != null){
+					pstmt.close();
+				}
+				if(connection != null){
+					connection.close();
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
