@@ -47,6 +47,7 @@ public class FirstConsume {
 		"condition":{"message.type":"consume_prop"}
 		}})
 		
+		//充值后首次消费
 		db.runCommand({"group":{
 		"ns":"server",
 		"key":{"message.user_id":true},

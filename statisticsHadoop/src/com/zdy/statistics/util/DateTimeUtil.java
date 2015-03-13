@@ -65,8 +65,28 @@ public class DateTimeUtil {
 		return sdf.format(calendar.getTime());
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(dateCalculate(new Date(),-1));
+	
+	public static String hourCalculate(Date date,int hour){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH");
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.HOUR_OF_DAY, hour);
+		
+		return sdf.format(calendar.getTime());
 	}
+	
+	public static String minuteCalculate(Date date,int minute){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.MINUTE, minute);
+		
+		return sdf.format(calendar.getTime());
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(minuteCalculate(new Date(),-15));
+	}
+	
 	
 }
