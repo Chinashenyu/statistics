@@ -24,8 +24,7 @@ public class TimerRun {
 			
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
-				System.out.println("-----------------------------"+new Date());
+				
 			}
 		}, calendar.getTimeInMillis() - new Date().getTime(), (long) (1000*60*5), TimeUnit.MILLISECONDS);
 		

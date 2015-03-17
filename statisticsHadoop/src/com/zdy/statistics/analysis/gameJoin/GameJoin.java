@@ -67,7 +67,7 @@ public class GameJoin {
 		cmd.put("group", group);
 		CommandResult cmdResult = db.command(cmd);
 		
-		Map<String,Integer> resMap = new HashMap<String, Integer>();
+		Map<String,Object> resMap = new HashMap<String, Object>();
 		Map<Integer,String> gameMap = GameContrast.getGameMap();
 		BasicBSONList retval = (BasicBSONList) cmdResult.get("retval");
 		for (Object object : retval) {
@@ -83,9 +83,9 @@ public class GameJoin {
 			}
 			if(resMap.containsKey(gameName)){
 				if(type == 1 || type == 3){
-					resMap.put(gameName, resMap.get(gameName)+1);
+					resMap.put(gameName, (Integer)resMap.get(gameName)+1);
 				}else if(type == 2 || type == 4){
-					resMap.put(gameName, resMap.get(gameName)+joinCount);
+					resMap.put(gameName, (Integer)resMap.get(gameName)+joinCount);
 				}
 			}else{
 				if(type == 1 || type == 3){
@@ -94,8 +94,9 @@ public class GameJoin {
 					resMap.put(gameName, joinCount);
 				}
 			}
+			
 		}
-		
+		resMap.put("date", DateTimeUtil.dateCalculate(new Date(), 0));
 		return JSONObject.fromObject(resMap).toString();
 	}
 	
