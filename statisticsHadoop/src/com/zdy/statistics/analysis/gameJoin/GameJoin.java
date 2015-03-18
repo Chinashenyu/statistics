@@ -96,7 +96,6 @@ public class GameJoin {
 			}
 			
 		}
-		resMap.put("date", DateTimeUtil.dateCalculate(new Date(), 0));
 		return JSONObject.fromObject(resMap).toString();
 	}
 	

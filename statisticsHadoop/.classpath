@@ -14,5 +14,8 @@
 	<classpathentry kind="lib" path="lib/commons-dbcp2-2.1.jar" sourcepath="/home/hadoop/Desktop/commons-dbcp2-2.1-src/src"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-pool2-2.3.jar" sourcepath="/home/hadoop/Desktop/commons-pool2-2.3-src/src"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-beanutils-1.7.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
