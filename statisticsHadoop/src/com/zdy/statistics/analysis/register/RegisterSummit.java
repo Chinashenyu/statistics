@@ -8,6 +8,8 @@ import java.util.Date;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
 import com.zdy.statistics.util.DateTimeUtil;
@@ -26,12 +28,50 @@ public class RegisterSummit {
 	
 	public int analysis(String startTime, String endTime){
 		
+		String sql = " insert into user_info (user_id,user_name) values (?,?)";
+		PreparedStatement pstmt = null;
+		
 		BasicDBObject query = new BasicDBObject();
 		
 		query.put("message.type", "register");
 		query.put("message.register_time", new BasicDBObject("$gte","").append("$lte", ""));
 		
+		DBCursor cursor = collection.find(query);
+		
+		try {
+			connection.setAutoCommit(false);
+			pstmt = connection.prepareStatement(sql);
+			
+			while(cursor.hasNext()){
+				DBObject object = cursor.next();
+				int userId = (int)(double)object.get("message.user_id");
+				String userName = (String) object.get("message.user_name");
+				
+				pstmt.setInt(1, userId);
+				pstmt.setString(2, userName);
+				
+				pstmt.addBatch();
+			}
+			
+			pstmt.executeBatch();
+			connection.commit();
+			
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+		}
+		
+		
 		int count = collection.find(query).count();
+		
 		
 		return count;
 	}

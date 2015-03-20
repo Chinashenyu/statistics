@@ -40,12 +40,12 @@ public class GameContrast {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally{
-//			try {
-//				pstmt.close();
-//				connection.close();
-//			} catch (SQLException e) {
-//				e.printStackTrace();
-//			}
+			try {
+				pstmt.close();
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
