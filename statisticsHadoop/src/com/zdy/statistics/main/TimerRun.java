@@ -11,7 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Timer {
+public class TimerRun {
 
 	public void runScheduled(long initialDelay,long period,TimeUnit timeUnit,Map<String,String> classMap,final Map<String,Object[]> argesMap){
 
@@ -77,7 +77,7 @@ public class Timer {
 	}
 	
 	public static void main(String[] args) {
-		Timer timerRun = new Timer();
+		TimerRun timerRun = new TimerRun();
 		timerRun.startTimer();
 	}
 }
