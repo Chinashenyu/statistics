@@ -3,6 +3,7 @@ package com.zdy.statistics.main;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TimerRun {
 
-	public void runTaskByDay(final String className,final String methodName,final Class<Object>[] clazzsArgesType,final Object[] arges){
+	public void runTaskByDay(final Map<String,String> analysisClassInfo){
 		
 		Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
 		calendar.set(Calendar.DAY_OF_MONTH, calendar.get(Calendar.DAY_OF_MONTH)+1);
@@ -28,9 +29,9 @@ public class TimerRun {
 			@Override
 			public void run() {
 				try {
-					Class clazz = Class.forName(className);
-					Method method = clazz.getMethod(methodName, clazzsArgesType);
-					method.invoke(clazz.newInstance(), arges);
+//					Class clazz = Class.forName(className);
+//					Method method = clazz.getMethod(methodName, clazzsArgesType);
+//					method.invoke(clazz.newInstance(), arges);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
