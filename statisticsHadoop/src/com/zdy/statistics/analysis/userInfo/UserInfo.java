@@ -427,8 +427,14 @@ public class UserInfo {
 		return null;
 	}
 	
-	
+	/**
+	 * 实时查询的，调用时查询
+	 * @return
+	 */
 	public String analysisCompete(){
+		
+		
+		
 		return null;
 	}
 	

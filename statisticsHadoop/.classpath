@@ -4,7 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/hadoop"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.12-bin.jar"/>
-	<classpathentry kind="lib" path="lib/mongo-java-driver-2.13.0.jar" sourcepath="/home/hadoop/Desktop/mongo-java-driver-r2.13.0">
+	<classpathentry kind="lib" path="lib/mongo-java-driver-2.13.0.jar" sourcepath="C:/Users/Administrator/Desktop/jar/mongodb/mongo-java-driver-r2.13.0.zip">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:file:/home/hadoop/Desktop/mongo-java-driver-javadoc-2.13.0.jar!/"/>
 		</attributes>

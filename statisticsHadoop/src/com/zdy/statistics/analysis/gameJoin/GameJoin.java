@@ -49,11 +49,13 @@ public class GameJoin {
 		group.put("ns", "server");
 		if(type == 1 || type ==2){
 			group.put("key", new BasicDBObject("message.game","true").append("message.table_id", "true"));
+			group.put("initial", new BasicDBObject("count",0));
+			group.put("$reduce", "function(doc,prev){prev.count += 1;}");
 		}else if(type == 3 || type == 4){
 			group.put("key", new BasicDBObject("message.compete","true").append("message.table_id", "true"));
+			group.put("initial", new BasicDBObject("count",0).append("name", ""));
+			group.put("$reduce", "function(doc,prev){prev.count += 1;prev.name = doc.message.competeName}");
 		}
-		group.put("initial", new BasicDBObject("count",0));
-		group.put("$reduce", "function(doc,prev){prev.count += 1;}");
 		
 		if(type == 1 || type == 2){
 			String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
@@ -75,22 +77,29 @@ public class GameJoin {
 			double keyD = (Double)dbObject.get("message.game");
 			Integer joinCount = (int)((double)dbObject.get("count"));
 			Integer key = (int)keyD;
+			
 			String gameName = "";
 			if(gameMap.containsKey(key)){
 				gameName = gameMap.get(key);
 			}else{
 				GameContrast.updateGameMap();
+				gameName = gameMap.get(key);
 			}
+			
 			if(resMap.containsKey(gameName)){
 				if(type == 1 || type == 3){
+					if(type == 3) gameName = dbObject.getString("competeName");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+1);
 				}else if(type == 2 || type == 4){
+					if(type == 4) gameName = dbObject.getString("competeName");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+joinCount);
 				}
 			}else{
 				if(type == 1 || type == 3){
+					if(type == 3) gameName = dbObject.getString("competeName");
 					resMap.put(gameName, 1);
 				}else if(type == 2 || type == 4){
+					if(type == 4) gameName = dbObject.getString("competeName");
 					resMap.put(gameName, joinCount);
 				}
 			}

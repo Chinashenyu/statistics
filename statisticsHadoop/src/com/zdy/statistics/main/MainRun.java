@@ -25,7 +25,8 @@ public class MainRun {
 		init();
 		
 		//开启定时器
-		
+		TimerRun timer = new TimerRun();
+		timer.startTimer();
 	}
 
 }

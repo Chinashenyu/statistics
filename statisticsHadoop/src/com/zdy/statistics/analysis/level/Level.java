@@ -3,6 +3,7 @@ package com.zdy.statistics.analysis.level;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class Level {
 	}
 	
 	/**
-	 * mongodb·ÖÎö½Å±¾
+	 * mongodbè„šæœ¬
 	 * db.runCommand({"group":{
 		"ns":"server",
 		"key":{"message.level":true},
@@ -61,16 +62,17 @@ public class Level {
 		CommandResult commandResult = db.command(cmd);
 		BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
 		
-		Map<String,Integer> resMap = new HashMap<String, Integer>();
+		Map<String,String> resMap = new HashMap<String, String>();
 		if(retval != null){
 			for (Object object : retval) {
 				
 				BasicDBObject dbObject = (BasicDBObject) object;
-				String level = "µÈ¼¶"+((Double)dbObject.get("message.level")).toString();
+				String level = "ç­‰çº§"+((int)(double)dbObject.get("message.level"));
 				Integer count = (int)(double)(dbObject.get("count"));
 				
-				resMap.put(level, count);
+				resMap.put(level, count+" äºº");
 			}
+			resMap.put("æ—¥æœŸ", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 		}
 		
 		return JSONObject.fromObject(resMap).toString();
