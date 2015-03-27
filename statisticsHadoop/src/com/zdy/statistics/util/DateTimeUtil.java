@@ -84,8 +84,19 @@ public class DateTimeUtil {
 		return sdf.format(calendar.getTime());
 	}
 	
+	public static String secondCalculate(Date date,int second){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.SECOND, second);
+		
+		return sdf.format(calendar.getTime());
+	}
+	
 	public static void main(String[] args) {
-		System.out.println(minuteCalculate(new Date(),-15));
+		Date now = new Date();
+		System.out.println(now);
+		System.out.println(secondCalculate(now,-15));
 	}
 	
 	
