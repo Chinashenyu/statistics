@@ -19,6 +19,7 @@ import com.mongodb.DBCollection;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
 import com.zdy.statistics.main.MainRun;
+import com.zdy.statistics.util.DateTimeUtil;
 
 public class Level {
 
@@ -72,7 +73,7 @@ public class Level {
 				
 				resMap.put(level, count+" 人");
 			}
-			resMap.put("日期", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+			resMap.put("日期", DateTimeUtil.dateCalculate(new Date(), -1));
 		}
 		
 		return JSONObject.fromObject(resMap).toString();
@@ -86,7 +87,7 @@ public class Level {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setString(1, analysis());
-			pstmt.setDate(2, new java.sql.Date(new Date().getTime()));
+			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
 			
 			pstmt.executeUpdate();
 			connection.commit();

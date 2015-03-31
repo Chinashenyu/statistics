@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.bson.types.BasicBSONList;
 
 import com.mongodb.BasicDBObject;
@@ -20,6 +21,8 @@ public class Register {
 	private Connection connection;
 	private DB db;
 	private DBCollection collection;
+	
+	private Logger logger = Logger.getLogger(Register.class);
 	
 	public Register() {
 		connection = MysqlConnect.getConnection();
@@ -42,9 +45,9 @@ public class Register {
 	public int dayRegisterAnalysis(){
 		BasicDBObject query = new BasicDBObject();
 		query.put("message.type", "register");
-		String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
-		String ltTime = DateTimeUtil.dateCalculate(new Date(), 1)+" 00:00:00";
-		query.put("message.register_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime));
+		String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
+		String ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
+		query.put("message.register_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
 		
 		int dayRegisterCount = collection.find(query).count();
 		return dayRegisterCount;
@@ -84,7 +87,7 @@ public class Register {
 	}
 	
 	public void insertResult(){
-		String sql = " insert into register_info (register_count,new_add,total_device,new_device,day_time) select register_count+?,?,?,?-total_device,now() from register_info";
+		String sql = " insert into register_info (register_count,new_add,total_device,new_device,day_time) select register_count+?,?,?,?-total_device,? from register_info";
 		PreparedStatement pstmt = null;
 		
 		int[] counts = analysis();
@@ -96,14 +99,17 @@ public class Register {
 			pstmt.setInt(2, counts[0]);
 			pstmt.setInt(3, counts[1]);
 			pstmt.setInt(4, counts[1]);
+			pstmt.setString(5, DateTimeUtil.dateCalculate(new Date(), -1));
 			
 			pstmt.executeUpdate();
 			connection.commit();
+			
+			logger.info("注册：新增注册信息成功！");
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
+				logger.info("注册：新增注册信息失败！！！！！");
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			e.printStackTrace();

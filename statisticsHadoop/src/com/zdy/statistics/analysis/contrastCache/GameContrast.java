@@ -24,7 +24,7 @@ public class GameContrast {
 	
 	private static void initialGameMap(Integer[] gameIds){
 		
-		String sql = " select game_type,game_name from gameType_contrast";
+		String sql = " select game_type,game_name from gametype_contrast";
 		PreparedStatement pstmt = null;
 		if(gameIds != null && gameIds.length > 0){
 			sql += " where game_type not in "+Arrays.toString(gameIds).replaceAll("[", "(").replaceAll("]", ")");

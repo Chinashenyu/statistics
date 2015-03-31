@@ -16,9 +16,9 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 import java.net.UnknownHostException;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Date;
 
 /**
  *
@@ -42,9 +42,9 @@ public class AnalysisShop {
         query.put("message.type", "obtain_prop");
         query.put("message.event", 1);
         java.util.Date now = new java.util.Date();
-        String gtTime = DateTimeUtil.dateCalculate(now, -1) + " 23:59:59";
-        String ltTime = DateTimeUtil.dateCalculate(now, 1) + " 00:00:00";
-        query.put("message.opera_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime));
+        String gtTime = DateTimeUtil.dateCalculate(now, -1) + " 00:00:00";
+        String ltTime = DateTimeUtil.dateCalculate(now, -1) + " 23:59:59";
+        query.put("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
         DBCursor cur = collection.find(query);
         int count = 0;
         while(cur.hasNext()){
@@ -62,8 +62,7 @@ public class AnalysisShop {
     		connection.setAutoCommit(false);
 			PreparedStatement pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, shopSellCount);
-			Date date = new Date(new java.util.Date().getTime());
-			pstmt.setDate(2, date);
+			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
 			
 			pstmt.executeUpdate();
 			

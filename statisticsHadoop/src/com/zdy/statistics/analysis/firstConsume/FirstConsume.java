@@ -16,6 +16,7 @@ import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
+import com.zdy.statistics.util.DateTimeUtil;
 
 public class FirstConsume {
 
@@ -150,7 +151,7 @@ public class FirstConsume {
 				String resJson = analysis(i);
 				pstmt.setString(1, resJson);
 				pstmt.setInt(2, i);
-				pstmt.setDate(3, new java.sql.Date(new Date().getTime()));
+				pstmt.setString(3, DateTimeUtil.dateCalculate(new Date(), -1));
 				
 				pstmt.addBatch();
 			}

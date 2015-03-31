@@ -58,10 +58,10 @@ public class GameJoin {
 		}
 		
 		if(type == 1 || type == 2){
-			String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
-			String ltTime = DateTimeUtil.dateCalculate(new Date(), 1)+" 00:00:00";
+			String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
+			String ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
 			group.put("condition", new BasicDBObject("message.type","join")
-			.append("message.join_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime)));
+			.append("message.join_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)));
 		}else if(type == 3 || type == 4){
 			group.put("condition", new BasicDBObject("message.type","join").append("message.compete", new BasicDBObject("$ne",null)));
 		}
@@ -122,7 +122,7 @@ public class GameJoin {
 					pstmt.setString(1, resJson);
 				}
 				pstmt.setInt(2, i);
-				pstmt.setDate(3, new java.sql.Date(new Date().getTime()));
+				pstmt.setString(3, DateTimeUtil.dateCalculate(new Date(), -1));
 				pstmt.addBatch();
 			}
 			

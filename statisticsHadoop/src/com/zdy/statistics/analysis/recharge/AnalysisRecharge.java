@@ -33,9 +33,9 @@ public class AnalysisRecharge {
 		query.put("message.type", "consume_prop");
 		query.put("message.event", 3);
 		java.util.Date now = new java.util.Date();
-		String gtTime = DateTimeUtil.dateCalculate(now, -1) + " 23:59:59";
-        String ltTime = DateTimeUtil.dateCalculate(now, 1) + " 00:00:00";
-        query.put("message.opera_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime));
+		String gtTime = DateTimeUtil.dateCalculate(now, -1) + " 00:00:00";
+        String ltTime = DateTimeUtil.dateCalculate(now, -1) + " 23:59:59";
+        query.put("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
         
         DBCursor cur = collection.find(query);
         
@@ -150,7 +150,7 @@ public class AnalysisRecharge {
 				pstmt.setDouble(5, Double.parseDouble(result[4]));
 				pstmt.setDouble(6, Double.parseDouble(result[5]));
 				pstmt.setDouble(7, Double.parseDouble(result[6]));
-				pstmt.setDate(8, new java.sql.Date(new Date().getTime()));
+				pstmt.setString(8, DateTimeUtil.dateCalculate(new Date(), -1));
 				
 				pstmt.executeUpdate();
 				connection.commit();

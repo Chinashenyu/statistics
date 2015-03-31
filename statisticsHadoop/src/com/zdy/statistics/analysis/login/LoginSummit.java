@@ -42,8 +42,9 @@ public class LoginSummit {
 		String sql = "insert into login_summit (count,start_time,end_time) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
-		gtTime = DateTimeUtil.minuteCalculate(new Date(), -15);
-		ltTime = DateTimeUtil.minuteCalculate(new Date(), 0);
+		Date date = new Date();
+		gtTime = DateTimeUtil.minuteCalculate(date, -15);
+		ltTime = DateTimeUtil.minuteCalculate(date, 0);
 		
 		try {
 			connection.setAutoCommit(false);

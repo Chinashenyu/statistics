@@ -57,7 +57,7 @@ public class Login {
 		
 		BasicDBObject query = new BasicDBObject();
 		query.put("message.type", "login");
-		query.put("message.login_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime));
+		query.put("message.login_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
 		
 		int count = collection.find(query).count();
 		
@@ -68,15 +68,15 @@ public class Login {
 		String sql = "insert into login_info (day_count,count,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
-		gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
-		ltTime = DateTimeUtil.dateCalculate(new Date(), 1)+" 00:00:00";
+		gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
+		ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
 		
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, dayLoginAnalysis());
 			pstmt.setInt(2, loginAnalysis());
-			pstmt.setDate(3, new java.sql.Date(new Date().getTime()));
+			pstmt.setString(3, DateTimeUtil.dateCalculate(new Date(), -1));
 			
 			pstmt.executeUpdate();
 			connection.commit();

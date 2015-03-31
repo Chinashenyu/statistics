@@ -19,6 +19,7 @@ import com.mongodb.DBObject;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
 import com.zdy.statistics.analysis.contrastCache.EventContrast;
+import com.zdy.statistics.util.DateTimeUtil;
 
 public class AnalysisHuanLe {
 	
@@ -117,7 +118,7 @@ public class AnalysisHuanLe {
 				String resultSet = analysisConsume(i);
 				pstmt.setString(1, resultSet);
 				pstmt.setInt(2, i);
-				pstmt.setDate(3, new java.sql.Date(new Date().getTime()));
+				pstmt.setString(3, DateTimeUtil.dateCalculate(new Date(), -1));
 				pstmt.addBatch();
 			}
 			

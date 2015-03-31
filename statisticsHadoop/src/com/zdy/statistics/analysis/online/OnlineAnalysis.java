@@ -20,14 +20,15 @@ import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
 import com.zdy.statistics.util.DateTimeUtil;
 
-public class Online {
+public class OnlineAnalysis {
 
 	private static Connection connection;
 	private static DB db;
 	
 	private static Map<Integer,String> onlineMap = new HashMap<Integer,String>();
+	private static Map<Integer,String> onlineCountMap = new HashMap<Integer,String>();
 	
-	public Online() {
+	public OnlineAnalysis() {
 		
 	}
 	
@@ -49,13 +50,13 @@ public class Online {
 				if(doc.message.type == "login"){
 					if(prev.time < doc.message.login_time);{
 						prev.time = doc.message.login_time;
-						isOnline = 1;
+						prev.isOnline = 1;
 					}
 					
 				}else if(doc.message.type == "logout"){
 					if(prev.time < doc.message.logout_time);{
 						prev.time = doc.message.logout_time;
-						isOnline = 0;
+						prev.isOnline = 0;
 					}
 				}
 			},
@@ -65,9 +66,14 @@ public class Online {
 					return null;
 			}
 		}})
+
 	 * @return
 	 */
 	public static void initAnalysis(){
+		
+		if(onlineMap.size() > 0){
+			onlineMap.clear();
+		}
 		
 		BasicDBObject cmd = new BasicDBObject();
 		
@@ -108,16 +114,16 @@ public class Online {
 			if(object != null){
 				DBObject dbObject = (DBObject)object;
 				Integer userId = (int)(double)dbObject.get("message.user_id");
-				String loginTime = (String)dbObject.get("message.time");
+				String loginTime = (String)dbObject.get("time");
 				onlineMap.put(userId, loginTime);
 			}
 		}
 		
+		System.out.println(onlineMap);
 	}
 	
 	/**
-	 * 定时查询登陆，退出数据
-	 * 
+	 * 定时器 调度此方法
 	 */
 	public void analysis(){
 		
@@ -174,28 +180,76 @@ public class Online {
 			
 		}
 		
-		Integer[] userIds = new Integer[onlineMap.size()]; 
-		userIds = onlineMap.keySet().toArray(userIds);
-		System.out.println(Arrays.toString(userIds));
-		String sql = " update user_info set is_online = 1 where user_id in "+Arrays.toString(userIds).replaceAll("\\[", "(").replaceAll("\\]", ")");
-		System.out.println(sql);
+		onlineCountMap.putAll(onlineMap);
+		
+//		Integer[] userIds = new Integer[onlineMap.size()]; 
+//		userIds = onlineMap.keySet().toArray(userIds);
+//		System.out.println(Arrays.toString(userIds));
+//		String sql = " update user_info set is_online = 1 where user_id in "+Arrays.toString(userIds).replaceAll("\\[", "(").replaceAll("\\]", ")");
+//		System.out.println(sql);
+//		
+//		PreparedStatement pstmt = null;
+//		try {
+//			connection.setAutoCommit(false);
+//			pstmt = connection.prepareStatement(sql);
+//			
+//			pstmt.executeUpdate();
+//			connection.commit();
+//			
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}finally{
+//			
+//		}
+		
+	}
+	
+	/**
+	 * RMI 服务 调用此方法；
+	 * @return Map<Integer,String> onlineMap;
+	 */
+	public static Map<Integer,String> getOnlineMap(){
+		return onlineMap;
+	}
+	
+	/**
+	 * 在线峰值 定时器 调度
+	 * @param args
+	 */
+	public void analysisOnlineCount(){
+		
+		int count = onlineCountMap.size();
+		
+		String sql = " insert into online_count (online_count,time) values (?,?)";
+		
 		PreparedStatement pstmt = null;
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
+			pstmt.setInt(1, count);
+			pstmt.setDate(2, new java.sql.Date(new Date().getTime()));
+			pstmt.setString(2, DateTimeUtil.minuteCalculate(new Date(), 0));
 			
 			pstmt.executeUpdate();
 			connection.commit();
 			
-		} catch (SQLException e) {
+		}  catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		}finally{
-			
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 		
 	}
+	
 	public static void main(String[] args) {
 		//Online.initAnalysis();
-		new Online().analysis();
+		new OnlineAnalysis();
+//		initAnalysis();
 	}
 }

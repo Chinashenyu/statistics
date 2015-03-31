@@ -20,12 +20,22 @@ public class RegisterSummit {
 	private DB db;
 	private DBCollection collection;
 	
+	/**
+	 * 
+	 */
 	public RegisterSummit() {
 		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
 	
+	/**
+	 * 分析新注册的用户数，同时在user_info表中新增，新注册用户的信息；
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return 注册数
+	 */
 	public int analysis(String startTime, String endTime){
 		
 		String sql = " insert into user_info (user_id,user_name) values (?,?)";
@@ -34,7 +44,7 @@ public class RegisterSummit {
 		BasicDBObject query = new BasicDBObject();
 		
 		query.put("message.type", "register");
-		query.put("message.register_time", new BasicDBObject("$gte","").append("$lte", ""));
+		query.put("message.register_time", new BasicDBObject("$gte",startTime).append("$lte", endTime));
 		
 		DBCursor cursor = collection.find(query);
 		
@@ -60,7 +70,6 @@ public class RegisterSummit {
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
@@ -76,6 +85,9 @@ public class RegisterSummit {
 		return count;
 	}
 	
+	/**
+	 * 将注册用户数 添加到 register_summit（注册峰值表） 中
+	 */
 	public void insertResult(){
 		String sql = " insert into register_summit (count,start_time,end_time) values (?,?,?) ";
 		PreparedStatement pstmt = null;
