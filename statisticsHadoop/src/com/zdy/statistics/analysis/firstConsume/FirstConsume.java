@@ -101,6 +101,7 @@ public class FirstConsume {
 							+ "if(prev.event == 3){ "
 									+ "prev.first += doc.message.event+'@'; "
 							+ "}"
+							+ "prev.event = doc.message.event;"//
 						+ "}"
 						+ "prev.count++;"
 					+ "}");
@@ -110,11 +111,12 @@ public class FirstConsume {
 		
 		cmd.put("group", group);
 		CommandResult commandResult = db.command(cmd);
-		
+		System.out.println(cmd);
 		Map<Integer,Integer> resMap = new HashMap<Integer, Integer>();
 		Map<Integer, String> eventMap = EventContrast.getEventMap();
 		
 		BasicBSONList retval = (BasicBSONList)commandResult.get("retval");
+		int i = 0;
 		for (Object object : retval) {
 			BasicDBObject dbObject = (BasicDBObject)object;
 			if(type == 1){
@@ -129,6 +131,7 @@ public class FirstConsume {
 				
 			}else if(type == 2){
 				String[] eventIdsStr = dbObject.getString("first").split("@");
+				System.out.println(dbObject);
 				for (String idStr : eventIdsStr) {
 					if(idStr != null && !"".equals(idStr)){
 						Integer eventId = Integer.parseInt(idStr);
@@ -199,6 +202,7 @@ public class FirstConsume {
 	}
 	
 	public static void main(String[] args) {
-		new FirstConsume().insertResult();
+		String analysis = new FirstConsume().analysis(2);
+		System.out.println(analysis);
 	}
 }
