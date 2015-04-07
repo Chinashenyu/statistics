@@ -45,11 +45,13 @@ public class AnalysisShop {
         String gtTime = DateTimeUtil.dateCalculate(now, -1) + " 00:00:00";
         String ltTime = DateTimeUtil.dateCalculate(now, -1) + " 23:59:59";
         query.put("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
+        System.out.println(query);
         DBCursor cur = collection.find(query);
         int count = 0;
         while(cur.hasNext()){
-        	DBObject dbObject = cur.next();
-        	count += ((int)dbObject.get("message.count"));
+        	BasicDBObject dbObject = (BasicDBObject) cur.next();
+        	DBObject message = (DBObject) dbObject.get("message");
+        	count += ((int)message.get("count"));
         }
         
         return count;
@@ -57,12 +59,12 @@ public class AnalysisShop {
     
     public void insertResult(int shopSellCount){
     	String sql = "insert into shop_sell (count,date) values (?,?)";
-    	
+    	PreparedStatement pstmt = null;
     	try {
     		connection.setAutoCommit(false);
-			PreparedStatement pstmt = connection.prepareStatement(sql);
+			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, shopSellCount);
-			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
+			pstmt.setString(2, DateTimeUtil.getyesterday());
 			
 			pstmt.executeUpdate();
 			
@@ -77,6 +79,7 @@ public class AnalysisShop {
 			e.printStackTrace();
 		}finally{
 			try {
+				pstmt.close();
 				connection.close();
 			} catch (SQLException e) {
 				e.printStackTrace();

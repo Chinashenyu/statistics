@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
@@ -16,6 +17,7 @@ import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.zdy.statistics.analysis.common.MongoDBConnector;
 import com.zdy.statistics.analysis.common.MysqlConnect;
+import com.zdy.statistics.analysis.contrastCache.EventContrast;
 import com.zdy.statistics.util.DateTimeUtil;
 
 public class FirstConsume {
@@ -110,6 +112,8 @@ public class FirstConsume {
 		CommandResult commandResult = db.command(cmd);
 		
 		Map<Integer,Integer> resMap = new HashMap<Integer, Integer>();
+		Map<Integer, String> eventMap = EventContrast.getEventMap();
+		
 		BasicBSONList retval = (BasicBSONList)commandResult.get("retval");
 		for (Object object : retval) {
 			BasicDBObject dbObject = (BasicDBObject)object;
@@ -121,6 +125,8 @@ public class FirstConsume {
 				}else{
 					resMap.put(eventId, 1);
 				}
+				
+				
 			}else if(type == 2){
 				String[] eventIdsStr = dbObject.getString("first").split("@");
 				for (String idStr : eventIdsStr) {
@@ -137,7 +143,26 @@ public class FirstConsume {
 			
 		}
 		
-		return JSONObject.fromObject(resMap).toString();
+		Map<String,Integer> jsonMap = new HashMap<String, Integer>();
+		for(Entry<Integer, Integer> entry : resMap.entrySet()){
+			Integer key = entry.getKey();
+			Integer value = entry.getValue();
+			
+			if(eventMap.containsKey(key)){
+				jsonMap.put(eventMap.get(key), value);
+			}else{
+				EventContrast.updateEventMap();
+				if(eventMap.containsKey(key)){
+					jsonMap.put(eventMap.get(key), value);
+				}else{
+					jsonMap.put(key+"", value);
+				}
+			}
+			
+		}
+		
+		
+		return JSONObject.fromObject(jsonMap).toString();
 	}
 	
 	public void insertResult(){

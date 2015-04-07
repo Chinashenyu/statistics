@@ -3,6 +3,7 @@ package com.zdy.statistics.analysis.userInfo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 
 import org.bson.types.BasicBSONList;
 
@@ -81,9 +82,11 @@ public class UserInfo {
 				DBObject dbObject = (DBObject) object;
 				int count = (int)(double)dbObject.get("sex");
 				String nickName = (String)dbObject.get("nickName");
+				int userId = (int)(double)dbObject.get("message.user_id");
 				
 				pstmt.setInt(1, count);
 				pstmt.setString(2, nickName);
+				pstmt.setInt(3, userId);
 				
 				pstmt.addBatch();
 			}
@@ -146,8 +149,9 @@ public class UserInfo {
 			
 			while(cursor.hasNext()){
 				DBObject userLevel = cursor.next();
-				int userId = (int)(double)userLevel.get("message.user_id");
-				int level = (int)(double)userLevel.get("message.level");
+				Map message = (Map) userLevel.get("message");
+				int userId = (int)message.get("user_id");
+				int level = (int)message.get("level");
 				pstmt.setInt(1, level);
 				pstmt.setInt(2, userId);
 				
@@ -191,70 +195,76 @@ public class UserInfo {
 		}})
 	 * @return
 	 */
-	public String analysisHuanle(int prop){
+	public String analysisHuanle(){
 		
-		String sql = "";
-		if(prop == 10600){
-			sql = "update user_info set huanledou = huanledou+? where user_id = ?";
-		}else if(prop == 10500){
-			sql = "update user_info set huanleka = huanleka+? where user_id = ?";
-		}
-		PreparedStatement pstmt = null;
+		int[] props = {10600,10500};
 		
-		BasicDBObject cmd = new BasicDBObject();
 		
-		BasicDBObject group = new BasicDBObject();
-		group.put("ns", "server");
-		group.put("key", new BasicDBObject("message.user_id","true"));
-		group.put("initial", new BasicDBObject("count",0));
-		group.put("$reduce", "function(doc,prev){"+
-					"if(doc.message.type == \"consume_prop\"){"+
-						"prev.count -= doc.message.count;"+
-					"}else if(doc.message.type == \"obtain_prop\"){"+
-						"prev.count += doc.message.count;"+
-					"}"+
-				"}");
-		BasicBSONList orBson = new BasicBSONList();
-		orBson.add(new BasicDBObject("message.consume",prop));
-		orBson.add(new BasicDBObject("message.obtain",prop));
-		
-		String gtTime = DateTimeUtil.getyesterday()+" 00:00:00";
-		String ltTime = DateTimeUtil.getyesterday()+" 23:59:59";
-		group.put("condition", new BasicDBObject("$or",orBson).append("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)));
-		cmd.put("group", group);
-		
-		CommandResult commandResult = db.command(cmd);
-		
-		try {
-			connection.setAutoCommit(false);
-			pstmt = connection.prepareStatement(sql);
-			
-			BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
-			for (Object object : retval) {
-				DBObject dbObject = (DBObject) object;
-				int count = (int)(double)dbObject.get("count");
-				int userId = (int)(double)dbObject.get("message.user_id");
-				
-				pstmt.setInt(1, count);
-				pstmt.setInt(2, userId);
-				
-				pstmt.addBatch();
+		for (int prop : props) {
+			String sql = "";
+			if(prop == 10600){
+				sql = "update user_info set huanledou = huanledou+? where user_id = ?";
+			}else if(prop == 10500){
+				sql = "update user_info set huanleka = huanleka+? where user_id = ?";
 			}
+			PreparedStatement pstmt = null;
 			
-			pstmt.executeBatch();
-			connection.commit();
+			BasicDBObject cmd = new BasicDBObject();
 			
-		} catch (SQLException e) {
+			BasicDBObject group = new BasicDBObject();
+			group.put("ns", "server");
+			group.put("key", new BasicDBObject("message.user_id","true"));
+			group.put("initial", new BasicDBObject("count",0));
+			group.put("$reduce", "function(doc,prev){"+
+						"if(doc.message.type == \"consume_prop\"){"+
+							"prev.count -= doc.message.count;"+
+						"}else if(doc.message.type == \"obtain_prop\"){"+
+							"prev.count += doc.message.count;"+
+						"}"+
+					"}");
+			BasicBSONList orBson = new BasicBSONList();
+			orBson.add(new BasicDBObject("message.consume",prop));
+			orBson.add(new BasicDBObject("message.obtain",prop));
+			
+			String gtTime = DateTimeUtil.getyesterday()+" 00:00:00";
+			String ltTime = DateTimeUtil.getyesterday()+" 23:59:59";
+			group.put("condition", new BasicDBObject("$or",orBson).append("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)));
+			cmd.put("group", group);
+			
+			CommandResult commandResult = db.command(cmd);
+			
 			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
+				connection.setAutoCommit(false);
+				pstmt = connection.prepareStatement(sql);
+				
+				BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
+				for (Object object : retval) {
+					DBObject dbObject = (DBObject) object;
+					int count = (int)(double)dbObject.get("count");
+					int userId = (int)(double)dbObject.get("message.user_id");
+					
+					pstmt.setInt(1, count);
+					pstmt.setInt(2, userId);
+					
+					pstmt.addBatch();
+				}
+				
+				pstmt.executeBatch();
+				connection.commit();
+				
+			} catch (SQLException e) {
+				try {
+					connection.rollback();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}finally{
+				if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
 			}
-			e.printStackTrace();
-		}finally{
-			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
+		
+		if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		
 		return null;
 	}
@@ -348,81 +358,93 @@ public class UserInfo {
 		@param type 1-游戏参与局数 2-游戏获胜次数
 	 * @return 
 	 */
-	public String analysisGameJoin(int game,int type){
-		String gameName = "";
-		if(game == 1){
-			if(type == 2){
-				gameName = "doudizhu_winRate";
-			}else{
-				gameName = "doudizhu_join";
-			}
-		}else if(game == 2){
-			if(type == 2){
-				gameName = "ysz_winRate";
-			}else{
-				gameName = "ysz_join";
-			}
-		}else if(game == 3){
-			if(type == 2){
-				gameName = "douniu_winRate";
-			}else{
-				gameName = "douniu_join";
-			}
-		}
-		String sql = "update user_info set "+gameName+" = "+gameName+"+? where user_id = ? ";
-		PreparedStatement pstmt = null;
+	public String analysisGameJoin(){
 		
-		BasicDBObject cmd = new BasicDBObject();
+		int[] games = {1,2,3};
+		int[] types = {1,2};
 		
-		BasicDBObject group = new BasicDBObject();
-		group.put("ns", "server");
-		group.put("key", new BasicDBObject("message.user_id","true"));
-		group.put("initial", new BasicDBObject("times",0));
-		group.put("$reduce", "function(doc,prev){"+
-					"prev.times++;"+
-				"}");
 		
-		String gtTime = DateTimeUtil.getyesterday()+" 00:00:00";
-		String ltTime = DateTimeUtil.getyesterday()+" 23:59:59";
-		BasicDBObject condition = new BasicDBObject("message.game",gameName).append("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
-		if(type == 2){
-			condition.append("message.result", 1);
-		}
-		group.put("condition", condition);
-		cmd.put("group", group);
 		
-		CommandResult commandResult = db.command(cmd);
-		
-		try {
-			connection.setAutoCommit(false);
-			pstmt = connection.prepareStatement(sql);
-			
-			BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
-			for (Object object : retval) {
-				DBObject dbObject = (DBObject) object;
-				int times = (int)(double)dbObject.get("times");
-				int userId = (int)(double)dbObject.get("message.user_id");
+		for (int game : games) {
+			for(int type : types){
+				String gameName = "";
+				if(game == 1){
+					if(type == 2){
+						gameName = "doudizhu_winRate";
+					}else{
+						gameName = "doudizhu_join";
+					}
+				}else if(game == 2){
+					if(type == 2){
+						gameName = "ysz_winRate";
+					}else{
+						gameName = "ysz_join";
+					}
+				}else if(game == 3){
+					if(type == 2){
+						gameName = "douniu_winRate";
+					}else{
+						gameName = "douniu_join";
+					}
+				}
+				String sql = "update user_info set "+gameName+" = "+gameName+"+? where user_id = ? ";
+				PreparedStatement pstmt = null;
 				
-				pstmt.setInt(1, times);
-				pstmt.setInt(2, userId);
+				BasicDBObject cmd = new BasicDBObject();
 				
-				pstmt.addBatch();
+				BasicDBObject group = new BasicDBObject();
+				group.put("ns", "server");
+				group.put("key", new BasicDBObject("message.user_id","true"));
+				group.put("initial", new BasicDBObject("times",0));
+				group.put("$reduce", "function(doc,prev){"+
+							"prev.times++;"+
+						"}");
+				
+				String gtTime = DateTimeUtil.getyesterday()+" 00:00:00";
+				String ltTime = DateTimeUtil.getyesterday()+" 23:59:59";
+				BasicDBObject condition = new BasicDBObject("message.game",gameName).append("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
+				if(type == 2){
+					condition.append("message.result", 1);
+				}
+				group.put("condition", condition);
+				cmd.put("group", group);
+				
+				CommandResult commandResult = db.command(cmd);
+				
+				try {
+					connection.setAutoCommit(false);
+					pstmt = connection.prepareStatement(sql);
+					
+					BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
+					for (Object object : retval) {
+						DBObject dbObject = (DBObject) object;
+						int times = (int)(double)dbObject.get("times");
+						int userId = (int)(double)dbObject.get("message.user_id");
+						
+						pstmt.setInt(1, times);
+						pstmt.setInt(2, userId);
+						
+						pstmt.addBatch();
+					}
+					
+					pstmt.executeBatch();
+					connection.commit();
+					
+				} catch (SQLException e) {
+					try {
+						connection.rollback();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}finally{
+					if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+				}
 			}
-			
-			pstmt.executeBatch();
-			connection.commit();
-			
-		} catch (SQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		}finally{
-			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
+		
+		
+		if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		
 		return null;
 	}

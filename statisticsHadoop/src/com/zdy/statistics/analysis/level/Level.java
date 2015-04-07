@@ -86,6 +86,7 @@ public class Level {
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
+//			System.out.println(analysis());
 			pstmt.setString(1, analysis());
 			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
 			

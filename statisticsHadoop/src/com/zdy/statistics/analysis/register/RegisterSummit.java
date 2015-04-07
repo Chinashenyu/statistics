@@ -34,53 +34,54 @@ public class RegisterSummit {
 	 * 
 	 * @param startTime
 	 * @param endTime
+	 * @param isInsertUserInfo 如果为 true 则将新注册的用心 插入到用户信息表（user_info）中
 	 * @return 注册数
 	 */
-	public int analysis(String startTime, String endTime){
-		
-		String sql = " insert into user_info (user_id,user_name) values (?,?)";
-		PreparedStatement pstmt = null;
+	public int analysis(String startTime, String endTime ,boolean isInsertUserInfo){
 		
 		BasicDBObject query = new BasicDBObject();
 		
-		query.put("message.type", "register");
-		query.put("message.register_time", new BasicDBObject("$gte",startTime).append("$lte", endTime));
+		query.put("message.type", "registe");
+		query.put("message.registe_time", new BasicDBObject("$gte",startTime).append("$lte", endTime));
 		
 		DBCursor cursor = collection.find(query);
-		
-		try {
-			connection.setAutoCommit(false);
-			pstmt = connection.prepareStatement(sql);
-			
-			while(cursor.hasNext()){
-				DBObject object = cursor.next();
-				int userId = (int)(double)object.get("message.user_id");
-				String userName = (String) object.get("message.user_name");
-				
-				pstmt.setInt(1, userId);
-				pstmt.setString(2, userName);
-				
-				pstmt.addBatch();
-			}
-			
-			pstmt.executeBatch();
-			connection.commit();
-			
-		} catch (SQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		}finally{
-			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
-		}
-		
-		
 		int count = collection.find(query).count();
 		
+		if(isInsertUserInfo){
+			String sql = " insert into user_info (user_id,user_name) values (?,?)";
+			PreparedStatement pstmt = null;
+			
+			try {
+				connection.setAutoCommit(false);
+				pstmt = connection.prepareStatement(sql);
+				
+				while(cursor.hasNext()){
+					DBObject object = cursor.next();
+					DBObject message = (DBObject) object.get("message");
+					int userId = (int)message.get("user_id");
+					String userName = (String) message.get("user_name");
+					
+					pstmt.setInt(1, userId);
+					pstmt.setString(2, userName);
+					
+					pstmt.addBatch();
+				}
+				
+				pstmt.executeBatch();
+				connection.commit();
+				
+			} catch (SQLException e) {
+				try {
+					connection.rollback();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}finally{
+				if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+				if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+			}
+		}
 		
 		return count;
 	}
@@ -96,7 +97,7 @@ public class RegisterSummit {
 		String startTime = DateTimeUtil.hourCalculate(date, -1)+":00:00";
 		String endTime = DateTimeUtil.hourCalculate(date, -1)+":59:59";
 		
-		int registerSummit = analysis(startTime,endTime);
+		int registerSummit = analysis(startTime,endTime,false);
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
@@ -107,12 +108,7 @@ public class RegisterSummit {
 			pstmt.executeUpdate();
 			connection.commit();
 		} catch (SQLException e) {
-			try {
-				connection.rollback();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			if(connection != null){try { connection.rollback(); } catch (SQLException se) { }}
 			e.printStackTrace();
 		}finally{
 			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
@@ -120,7 +116,19 @@ public class RegisterSummit {
 		}
 	}
 	
+	/**
+	 * 添加注册用户信息
+	 */
+	public void insertUserInfo(){
+		
+		Date now = new Date();
+		String startTime = DateTimeUtil.secondCalculate(now, -5);
+		String endTime = DateTimeUtil.secondCalculate(now, 0);
+		
+		analysis(startTime, endTime,true);
+	}
+	
 	public static void main(String[] args) {
-		new RegisterSummit().insertResult();
+		new RegisterSummit().insertUserInfo();
 	}
 }

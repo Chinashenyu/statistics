@@ -32,12 +32,13 @@ public class OnlineRMIServiceImpl extends UnicastRemoteObject implements OnlineR
 	
 	public static void startRMIService() {
 		try {
+			System.setProperty("java.rmi.server.hostname","120.55.99.53");
 			OnlineRMIService onlineRMIService = new OnlineRMIServiceImpl();
 			
-			LocateRegistry.createRegistry(8000);
-			Naming.rebind("rmi://127.0.0.1:8000/OnlineRMIService", onlineRMIService);
+			LocateRegistry.createRegistry(8989);
+			Naming.rebind("rmi://120.55.99.53:8989/OnlineRMIService", onlineRMIService);
 			System.out.println("rmi is starting ... ");
-			logger.info("RMI 服务 开启成功");
+			logger.info("RMI 服务 开启成功 端口号：8989");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

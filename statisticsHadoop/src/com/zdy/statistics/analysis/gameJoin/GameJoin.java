@@ -67,6 +67,7 @@ public class GameJoin {
 		}
 		
 		cmd.put("group", group);
+//		System.out.println(cmd);
 		CommandResult cmdResult = db.command(cmd);
 		
 		Map<String,Object> resMap = new HashMap<String, Object>();
@@ -74,7 +75,12 @@ public class GameJoin {
 		BasicBSONList retval = (BasicBSONList) cmdResult.get("retval");
 		for (Object object : retval) {
 			BasicDBObject dbObject = (BasicDBObject) object;
-			double keyD = (Double)dbObject.get("message.game");
+			
+			double keyD = 0;
+			if(type == 3 || type == 4)
+				;
+			else if(type == 1 || type == 2)
+				keyD = (Double)dbObject.get("message.game");
 			Integer joinCount = (int)((double)dbObject.get("count"));
 			Integer key = (int)keyD;
 			
@@ -88,23 +94,25 @@ public class GameJoin {
 			
 			if(resMap.containsKey(gameName)){
 				if(type == 1 || type == 3){
-					if(type == 3) gameName = dbObject.getString("competeName");
+					if(type == 3) gameName = dbObject.getString("name");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+1);
 				}else if(type == 2 || type == 4){
-					if(type == 4) gameName = dbObject.getString("competeName");
+					if(type == 4) gameName = dbObject.getString("name");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+joinCount);
 				}
 			}else{
 				if(type == 1 || type == 3){
-					if(type == 3) gameName = dbObject.getString("competeName");
+					if(type == 3) gameName = dbObject.getString("name");
 					resMap.put(gameName, 1);
 				}else if(type == 2 || type == 4){
-					if(type == 4) gameName = dbObject.getString("competeName");
+					if(type == 4) gameName = dbObject.getString("name");
 					resMap.put(gameName, joinCount);
 				}
 			}
 			
 		}
+		
+		resMap.put("日期", DateTimeUtil.getyesterday());
 		return JSONObject.fromObject(resMap).toString();
 	}
 	
@@ -112,7 +120,6 @@ public class GameJoin {
 		String sql = " insert into game_join (result_set,type,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
-		connection = MysqlConnect.getConnection();
 		try {
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);

@@ -48,7 +48,7 @@ public class Login {
 		BasicBSONList values = (BasicBSONList)resultSet.get("values");
 		
 		int count = values.size();
-		System.out.println(count);
+//		System.out.println(count);
 		return count;
 	}
 	

@@ -44,10 +44,10 @@ public class Register {
 	//每日新增注册
 	public int dayRegisterAnalysis(){
 		BasicDBObject query = new BasicDBObject();
-		query.put("message.type", "register");
+		query.put("message.type", "registe");
 		String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
 		String ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
-		query.put("message.register_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
+		query.put("message.registe_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
 		
 		int dayRegisterCount = collection.find(query).count();
 		return dayRegisterCount;
@@ -76,7 +76,7 @@ public class Register {
 		group.put("$reduce", "function(doc,prev){"+
 							 	"prev.count += 1;"+
 							 "}");
-		group.put("condition", new BasicDBObject("message.type","register"));
+		group.put("condition", new BasicDBObject("message.type","registe"));
 		
 		cmd.put("group", group);
 		CommandResult resultSet = db.command(cmd);
@@ -87,7 +87,7 @@ public class Register {
 	}
 	
 	public void insertResult(){
-		String sql = " insert into register_info (register_count,new_add,total_device,new_device,day_time) select register_count+?,?,?,?-total_device,? from register_info";
+		String sql = " insert into register_info (register_count,new_add,total_device,new_device,day_time) select register_count+?,?,?,?-total_device,? from register_info where day_time = ?";
 		PreparedStatement pstmt = null;
 		
 		int[] counts = analysis();
@@ -100,10 +100,11 @@ public class Register {
 			pstmt.setInt(3, counts[1]);
 			pstmt.setInt(4, counts[1]);
 			pstmt.setString(5, DateTimeUtil.dateCalculate(new Date(), -1));
+			pstmt.setString(6, DateTimeUtil.dateCalculate(new Date(), -2));
 			
 			pstmt.executeUpdate();
 			connection.commit();
-			
+//			System.out.println(pstmt.toString());
 			logger.info("注册：新增注册信息成功！");
 		} catch (SQLException e) {
 			try {

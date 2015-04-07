@@ -46,7 +46,9 @@ public class AnalysisRecharge {
         //日收入
         int incomeOfDay = 0;
         while(cur.hasNext()){
-        	incomeOfDay += ((int)cur.next().get("message.count"));
+        	BasicDBObject dbbject = (BasicDBObject) cur.next();
+        	BasicDBObject message = (BasicDBObject) dbbject.get("message");
+        	incomeOfDay += ((int)message.get("count"));
         }
         
         int[] dayAnalysis = new int[2];

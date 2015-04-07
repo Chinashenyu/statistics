@@ -96,7 +96,7 @@ public class AnalysisHuanLe {
 				if(eventMap.containsKey(eventId)){
 					eventName = eventMap.get(eventId);
 				}else{
-					eventName = "the event_id is not exists !";
+					eventName = eventId+"";
 				}
 			}
 			
@@ -106,7 +106,7 @@ public class AnalysisHuanLe {
 		return JSONObject.fromObject(resMap).toString();
 	}
 	
-	public void insertReult(){
+	public void insertResult(){
 		
 		String sql = " insert into huanle (result_set,type,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
@@ -126,7 +126,6 @@ public class AnalysisHuanLe {
 			connection.commit();
 		} catch (SQLException e) {
 			try {
-				System.out.println("-------------------");
 				connection.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -146,6 +145,6 @@ public class AnalysisHuanLe {
 //		String json = new AnalysisHuanLe().analysisConsume();
 //		System.out.println(json);
 		
-		new AnalysisHuanLe().insertReult();
+		new AnalysisHuanLe().insertResult();
 	}
 }

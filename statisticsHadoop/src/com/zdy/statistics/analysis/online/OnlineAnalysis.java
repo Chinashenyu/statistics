@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.bson.types.BasicBSONList;
 
 import com.mongodb.BasicDBObject;
@@ -28,6 +29,8 @@ public class OnlineAnalysis {
 	private static Map<Integer,String> onlineMap = new HashMap<Integer,String>();
 	private static Map<Integer,String> onlineCountMap = new HashMap<Integer,String>();
 	
+	private static Logger logger = Logger.getLogger(OnlineAnalysis.class);
+	
 	public OnlineAnalysis() {
 		
 	}
@@ -36,6 +39,7 @@ public class OnlineAnalysis {
 		db = MongoDBConnector.getDB();
 		connection = MysqlConnect.getConnection();
 		initAnalysis();
+		logger.info("OnlineAnalysis 静态块 执行");
 	}
 	
 	/**
@@ -70,7 +74,7 @@ public class OnlineAnalysis {
 	 * @return
 	 */
 	public static void initAnalysis(){
-		
+		logger.info("OnlineAnalysis 初始化onlineMap方法  执行");
 		if(onlineMap.size() > 0){
 			onlineMap.clear();
 		}
@@ -107,7 +111,7 @@ public class OnlineAnalysis {
 				"}");
 		
 		cmd.put("group", group);
-		System.out.println("cmd :\n"+cmd);
+//		System.out.println("cmd :\n"+cmd);
 		CommandResult commandResult = db.command(cmd);
 		BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
 		for (Object object : retval) {
@@ -119,30 +123,30 @@ public class OnlineAnalysis {
 			}
 		}
 		
-		System.out.println(onlineMap);
+//		System.out.println(onlineMap.size());
 	}
 	
 	/**
 	 * 定时器 调度此方法
 	 */
 	public void analysis(){
-		
+		logger.info("OnlineAnalysis 当前在线 方法  执行");
 		BasicDBObject query = new BasicDBObject();
 		
-		BasicBSONList or = new BasicBSONList();
-		or.add(new BasicDBObject("message.type","login"));
-		or.add(new BasicDBObject("message.type","logout"));
-		
-		query.put("$or", or);
+//		BasicBSONList or = new BasicBSONList();
+//		or.add(new BasicDBObject("message.type","login"));
+//		or.add(new BasicDBObject("message.type","logout"));
+//		
+//		query.put("$or", or);
 		
 		Date now = new Date();
+		String gtTime = DateTimeUtil.secondCalculate(now, -5);
 		String ltTime = DateTimeUtil.secondCalculate(now, 0);
-		String gtTime = DateTimeUtil.secondCalculate(now, 5);
 		
-		BasicBSONList orTime = new BasicBSONList();
-		orTime.add(new BasicDBObject("message.login_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime)));
-		orTime.add(new BasicDBObject("message.logout_time", new BasicDBObject("$gt",gtTime).append("$lt", ltTime)));
-		query.put("$or", orTime);
+		BasicBSONList or = new BasicBSONList();
+		or.add(new BasicDBObject("message.login_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)).append("message.type","login"));
+		or.add(new BasicDBObject("message.logout_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)).append("message.type","logout"));
+		query.put("$or", or);
 		
 		BasicDBObject field = new BasicDBObject();
 		field.put("message.type", 1);
@@ -150,18 +154,22 @@ public class OnlineAnalysis {
 		field.put("message.login_time", 1);
 		field.put("message.logout_time", 1);
 		field.put("_id", 0);
-		
+//		System.out.println(query);
 		
 		DBCollection collection = db.getCollection("server");
 		DBCursor cursor = collection.find(query, field);
-		
+		logger.info("cursor count :"+cursor.count());
 		while(cursor.hasNext()){
-			System.out.println(cursor.next());
+			
 			BasicDBObject dbObject = (BasicDBObject) cursor.next();
-			int userId = (int)dbObject.getDouble("message.user_id");
-			String type = dbObject.getString("message.type");
+//			System.out.println(dbObject);
+			BasicDBObject message = (BasicDBObject) dbObject.get("message");
+			int userId = (int)message.getDouble("user_id");
+//			System.out.println("user_id"+userId);
+			String type = message.getString("type");
 			if(type != null && "login".equals(type)){
-				String time = dbObject.getString("message.login_time");
+				logger.info("onlinMap 添加 用户");
+				String time = message.getString("login_time");
 				if(onlineMap.containsKey(userId)){
 					if(time.compareTo(onlineMap.get(userId)) > 0)
 						onlineMap.put(userId, time);
@@ -169,7 +177,8 @@ public class OnlineAnalysis {
 					onlineMap.put(userId, time);
 				}
 			}else if(type != null && "logout".equals(type)){
-				String time = dbObject.getString("message.logout_time");
+				logger.info("onlinMap 删除 用户");
+				String time = message.getString("logout_time");
 				if(onlineMap.containsKey(userId)){
 					if(time.compareTo(onlineMap.get(userId)) > 0)
 						onlineMap.remove(userId);
@@ -179,28 +188,9 @@ public class OnlineAnalysis {
 			}
 			
 		}
-		
+//		System.out.println(cursor.count());
+//		System.out.println(onlineMap.size());
 		onlineCountMap.putAll(onlineMap);
-		
-//		Integer[] userIds = new Integer[onlineMap.size()]; 
-//		userIds = onlineMap.keySet().toArray(userIds);
-//		System.out.println(Arrays.toString(userIds));
-//		String sql = " update user_info set is_online = 1 where user_id in "+Arrays.toString(userIds).replaceAll("\\[", "(").replaceAll("\\]", ")");
-//		System.out.println(sql);
-//		
-//		PreparedStatement pstmt = null;
-//		try {
-//			connection.setAutoCommit(false);
-//			pstmt = connection.prepareStatement(sql);
-//			
-//			pstmt.executeUpdate();
-//			connection.commit();
-//			
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//		}finally{
-//			
-//		}
 		
 	}
 	
@@ -217,8 +207,9 @@ public class OnlineAnalysis {
 	 * @param args
 	 */
 	public void analysisOnlineCount(){
-		
+		logger.info("OnlineAnalysis 在线峰值方法  执行");
 		int count = onlineCountMap.size();
+		onlineCountMap.clear();
 		
 		String sql = " insert into online_count (online_count,time) values (?,?)";
 		
@@ -240,16 +231,14 @@ public class OnlineAnalysis {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-		}finally{
-			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 		
 	}
 	
 	public static void main(String[] args) {
 		//Online.initAnalysis();
-		new OnlineAnalysis();
+		new OnlineAnalysis().analysis();
+		
 //		initAnalysis();
 	}
 }

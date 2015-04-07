@@ -24,6 +24,7 @@ public class MyBasicDateSource {
 		ds.setUrl(url);
 		ds.setUsername(userName);
 		ds.setPassword(passWord);
+		ds.setInitialSize(30);
 		
 		return ds;
 	}
