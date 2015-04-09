@@ -14,14 +14,12 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class LoginSummit {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	private String gtTime;
 	private String ltTime;
 	
 	public LoginSummit() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -39,6 +37,9 @@ public class LoginSummit {
 	}
 	
 	public void insertResult(){
+		
+		Connection connection = null;
+		
 		String sql = "insert into login_summit (count,start_time,end_time) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
@@ -47,7 +48,9 @@ public class LoginSummit {
 		ltTime = DateTimeUtil.minuteCalculate(date, 0);
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
+			
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, analysis());
 			pstmt.setString(2, gtTime);

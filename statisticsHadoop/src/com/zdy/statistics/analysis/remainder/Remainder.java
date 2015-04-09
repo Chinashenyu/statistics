@@ -1,12 +1,12 @@
 package com.zdy.statistics.analysis.remainder;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,14 +28,13 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class Remainder {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 
 	private Date nowDaTe = new Date();
-	private String today = DateTimeUtil.dateCalculate(nowDaTe, 0);
-	private String startTime = today + " 00:00:00";
-	private String endTime = today + " 23:59:59";
+	private String yestoday = DateTimeUtil.dateCalculate(nowDaTe, -1);
+	private String startTime = yestoday + " 00:00:00";
+	private String endTime = yestoday + " 23:59:59";
 	
 	public Remainder() {
 		db = MongoDBConnector.getDB();
@@ -47,8 +46,6 @@ public class Remainder {
 
 	// 查找今日新注册用户
 	public void initAnalysis() {
-		
-		//connection = MysqlConnect.getConnection();
 		
 		// 查找今日新注册用户
 		BasicDBObject query = new BasicDBObject();
@@ -68,15 +65,18 @@ public class Remainder {
 			userIds.add(message.get("user_id"));
 		}
 
+		Connection connection = null;
+		
 		String insertRegistUseriIdSQL = " insert into remainder (frist_registe,date) values (?,?)";
 		PreparedStatement pstmt = null;
 
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
+			
 			pstmt = connection.prepareStatement(insertRegistUseriIdSQL);
-//			System.out.println("uids "+userIds.toString());
 			pstmt.setString(1, userIds.toString());
-			pstmt.setString(2, today);
+			pstmt.setString(2, yestoday);
 
 			pstmt.executeUpdate();
 			connection.commit();
@@ -84,22 +84,21 @@ public class Remainder {
 			e.printStackTrace();
 		}finally{
 			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-			//if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 
 	}
 
 	public void analysis(String type,String remaindeDate) {
-
-		//connection = MysqlConnect.getConnection();
+		Connection connection = null;
 
 		//查找某日留存
 		String querySQL = " select * from remainder where date = '"+remaindeDate+"'";
 		PreparedStatement queryPstmt = null;
-//		System.out.println("sql : "+querySQL);
 		String[] uids = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			queryPstmt = connection.prepareStatement(querySQL);
 			ResultSet resultSet = queryPstmt.executeQuery();
 			
@@ -108,7 +107,6 @@ public class Remainder {
 				// 当日注册的用户id
 				userIdsStr = resultSet.getString(2);
 			}
-//			System.out.println("userIdsStr : "+userIdsStr);
 			if("".equals(userIdsStr))
 				return ;
 			uids = userIdsStr.replaceAll("\\[", "")
@@ -119,7 +117,6 @@ public class Remainder {
 			if(queryPstmt != null){try { queryPstmt.close(); } catch (SQLException e) { }}
 		}
 		
-//		System.out.println("uids : "+Arrays.toString(uids));
 		if(uids != null && uids.length > 0){
 			
 			// 去重查询 当日注册，今日登陆的用户
@@ -129,6 +126,11 @@ public class Remainder {
 
 			BasicDBList in = new BasicDBList();
 			for (String uid : uids) {
+				if(uid.contains("E")){
+					System.out.println(uid.trim());
+					BigDecimal bd = new BigDecimal(uid.trim());
+					uid = bd.toPlainString();
+				}
 				in.add(Integer.parseInt(uid.trim()));
 			}
 
@@ -151,7 +153,6 @@ public class Remainder {
 			
 			DecimalFormat df = new DecimalFormat("#.00");
 			
-			
 			//更新留存率
 			String updateSQL = " update remainder set " + type + " = " + df.format(remainde) + " where date ='" + remaindeDate + "'";
 			PreparedStatement updatePstmt = null;
@@ -165,7 +166,7 @@ public class Remainder {
 				e.printStackTrace();
 			}finally{
 				if(updatePstmt != null){try { updatePstmt.close(); } catch (SQLException e) { }}
-				//if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+				if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 			}
 			
 		}
@@ -176,15 +177,13 @@ public class Remainder {
 	
 	public void insertResult(){
 		
-		connection = MysqlConnect.getConnection();
-		
 		initAnalysis();
 		
 		// 日期 向前推，计算出前 次、三、七、三十日的 日期
-		String tow = DateTimeUtil.dateCalculate(nowDaTe, -1);
-		String three = DateTimeUtil.dateCalculate(nowDaTe, -2);
-		String seven = DateTimeUtil.dateCalculate(nowDaTe, -6);
-		String thirty = DateTimeUtil.dateCalculate(nowDaTe, -29);
+		String tow = DateTimeUtil.dateCalculate(nowDaTe, -2);
+		String three = DateTimeUtil.dateCalculate(nowDaTe, -3);
+		String seven = DateTimeUtil.dateCalculate(nowDaTe, -7);
+		String thirty = DateTimeUtil.dateCalculate(nowDaTe, -30);
 		
 		Map<String,String> remaindeMap = new HashMap<String, String>(); 
 		remaindeMap.put("tow", tow);
@@ -192,17 +191,13 @@ public class Remainder {
 		remaindeMap.put("seven", seven);
 		remaindeMap.put("thirty", thirty);
 		
-//		System.out.println(remaindeMap);
-		
 		for (Entry<String, String> entry : remaindeMap.entrySet()) {
 			String key = entry.getKey();
 			String value = entry.getValue();
+			System.out.println(key+" : "+value);
 			
 			analysis(key, value);
 		}
-		
-		if(connection != null){try { connection.close(); } catch (SQLException e) { }}
-		
 	}
 
 	public static void main(String[] args) {

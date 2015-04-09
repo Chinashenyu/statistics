@@ -17,14 +17,12 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class Login {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	private String gtTime;
 	private String ltTime;
 	
 	public Login() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -48,7 +46,6 @@ public class Login {
 		BasicBSONList values = (BasicBSONList)resultSet.get("values");
 		
 		int count = values.size();
-//		System.out.println(count);
 		return count;
 	}
 	
@@ -65,6 +62,8 @@ public class Login {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
+		
 		String sql = "insert into login_info (day_count,count,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
@@ -72,7 +71,9 @@ public class Login {
 		ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
+			
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, dayLoginAnalysis());
 			pstmt.setInt(2, loginAnalysis());

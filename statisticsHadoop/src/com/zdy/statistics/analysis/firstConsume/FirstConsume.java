@@ -22,11 +22,9 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class FirstConsume {
 
-	private Connection connection;
 	private DB db;
 	
 	public FirstConsume(){
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 	}
 	
@@ -111,7 +109,7 @@ public class FirstConsume {
 		
 		cmd.put("group", group);
 		CommandResult commandResult = db.command(cmd);
-		System.out.println(cmd);
+		
 		Map<Integer,Integer> resMap = new HashMap<Integer, Integer>();
 		Map<Integer, String> eventMap = EventContrast.getEventMap();
 		
@@ -131,7 +129,7 @@ public class FirstConsume {
 				
 			}else if(type == 2){
 				String[] eventIdsStr = dbObject.getString("first").split("@");
-				System.out.println(dbObject);
+				
 				for (String idStr : eventIdsStr) {
 					if(idStr != null && !"".equals(idStr)){
 						Integer eventId = Integer.parseInt(idStr);
@@ -169,10 +167,13 @@ public class FirstConsume {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
+		
 		String sql = " insert into first_consume (result_set,type,date) values(?,?,?)";
 		PreparedStatement pstmt = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			for(int i=1;i<=2;i++){

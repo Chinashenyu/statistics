@@ -23,7 +23,6 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class OnlineAnalysis {
 
-	private static Connection connection;
 	private static DB db;
 	
 	private static Map<Integer,String> onlineMap = new HashMap<Integer,String>();
@@ -37,7 +36,6 @@ public class OnlineAnalysis {
 	
 	static{
 		db = MongoDBConnector.getDB();
-		connection = MysqlConnect.getConnection();
 		initAnalysis();
 		logger.info("OnlineAnalysis 静态块 执行");
 	}
@@ -130,14 +128,7 @@ public class OnlineAnalysis {
 	 * 定时器 调度此方法
 	 */
 	public void analysis(){
-		logger.info("OnlineAnalysis 当前在线 方法  执行");
 		BasicDBObject query = new BasicDBObject();
-		
-//		BasicBSONList or = new BasicBSONList();
-//		or.add(new BasicDBObject("message.type","login"));
-//		or.add(new BasicDBObject("message.type","logout"));
-//		
-//		query.put("$or", or);
 		
 		Date now = new Date();
 		String gtTime = DateTimeUtil.secondCalculate(now, -5);
@@ -154,7 +145,6 @@ public class OnlineAnalysis {
 		field.put("message.login_time", 1);
 		field.put("message.logout_time", 1);
 		field.put("_id", 0);
-//		System.out.println(query);
 		
 		DBCollection collection = db.getCollection("server");
 		DBCursor cursor = collection.find(query, field);
@@ -162,10 +152,8 @@ public class OnlineAnalysis {
 		while(cursor.hasNext()){
 			
 			BasicDBObject dbObject = (BasicDBObject) cursor.next();
-//			System.out.println(dbObject);
 			BasicDBObject message = (BasicDBObject) dbObject.get("message");
 			int userId = (int)message.getDouble("user_id");
-//			System.out.println("user_id"+userId);
 			String type = message.getString("type");
 			if(type != null && "login".equals(type)){
 				logger.info("onlinMap 添加 用户");
@@ -188,8 +176,6 @@ public class OnlineAnalysis {
 			}
 			
 		}
-//		System.out.println(cursor.count());
-//		System.out.println(onlineMap.size());
 		onlineCountMap.putAll(onlineMap);
 		
 	}
@@ -207,7 +193,8 @@ public class OnlineAnalysis {
 	 * @param args
 	 */
 	public void analysisOnlineCount(){
-		logger.info("OnlineAnalysis 在线峰值方法  执行");
+		Connection connection = null;
+		
 		int count = onlineCountMap.size();
 		onlineCountMap.clear();
 		
@@ -215,7 +202,9 @@ public class OnlineAnalysis {
 		
 		PreparedStatement pstmt = null;
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
+			
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, count);
 			pstmt.setDate(2, new java.sql.Date(new Date().getTime()));
@@ -231,6 +220,9 @@ public class OnlineAnalysis {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
+		}finally{
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 		
 	}

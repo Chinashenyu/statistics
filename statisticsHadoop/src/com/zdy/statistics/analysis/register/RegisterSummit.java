@@ -16,7 +16,6 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class RegisterSummit {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	
@@ -24,7 +23,7 @@ public class RegisterSummit {
 	 * 
 	 */
 	public RegisterSummit() {
-		connection = MysqlConnect.getConnection();
+		
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -39,6 +38,8 @@ public class RegisterSummit {
 	 */
 	public int analysis(String startTime, String endTime ,boolean isInsertUserInfo){
 		
+		Connection connection = null;
+		
 		BasicDBObject query = new BasicDBObject();
 		
 		query.put("message.type", "registe");
@@ -52,7 +53,9 @@ public class RegisterSummit {
 			PreparedStatement pstmt = null;
 			
 			try {
+				connection = MysqlConnect.getConnection();
 				connection.setAutoCommit(false);
+				
 				pstmt = connection.prepareStatement(sql);
 				
 				while(cursor.hasNext()){
@@ -90,6 +93,9 @@ public class RegisterSummit {
 	 * 将注册用户数 添加到 register_summit（注册峰值表） 中
 	 */
 	public void insertResult(){
+		
+		Connection connection = null;
+		
 		String sql = " insert into register_summit (count,start_time,end_time) values (?,?,?) ";
 		PreparedStatement pstmt = null;
 		
@@ -99,7 +105,9 @@ public class RegisterSummit {
 		
 		int registerSummit = analysis(startTime,endTime,false);
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
+			
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, registerSummit);
 			pstmt.setString(2, startTime);

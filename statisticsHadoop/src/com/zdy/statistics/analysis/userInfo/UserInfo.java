@@ -19,12 +19,10 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class UserInfo {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	
 	public UserInfo() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -48,6 +46,7 @@ public class UserInfo {
 	 * @return
 	 */
 	public String userBasicInfo(){
+		Connection connection = null;
 		
 		String sql = "update user_info set sex = ? , nick_name = ? where user_id = ? ";
 		PreparedStatement pstmt = null;
@@ -74,6 +73,7 @@ public class UserInfo {
 		CommandResult commandResult = db.command(cmd);
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			
@@ -141,9 +141,11 @@ public class UserInfo {
 		DBCursor cursor = collection.find(dbObject);
 		
 		String sql = "update user_info set level = ? where user_id = ?";
+		Connection connection = null;
 		PreparedStatement pstmt = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			
@@ -207,6 +209,7 @@ public class UserInfo {
 			}else if(prop == 10500){
 				sql = "update user_info set huanleka = huanleka+? where user_id = ?";
 			}
+			Connection connection = null;
 			PreparedStatement pstmt = null;
 			
 			BasicDBObject cmd = new BasicDBObject();
@@ -234,6 +237,7 @@ public class UserInfo {
 			CommandResult commandResult = db.command(cmd);
 			
 			try {
+				connection = MysqlConnect.getConnection();
 				connection.setAutoCommit(false);
 				pstmt = connection.prepareStatement(sql);
 				
@@ -248,7 +252,7 @@ public class UserInfo {
 					
 					pstmt.addBatch();
 				}
-				
+				System.out.println(pstmt);
 				pstmt.executeBatch();
 				connection.commit();
 				
@@ -261,10 +265,9 @@ public class UserInfo {
 				e.printStackTrace();
 			}finally{
 				if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+				if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 			}
 		}
-		
-		if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		
 		return null;
 	}
@@ -283,6 +286,7 @@ public class UserInfo {
 	 * @return
 	 */
 	public String ananlysisRecharge(){
+		Connection connection = null;
 		
 		String sql = "update user_info set recharge_count = recharge_count+? , recharge_times = recharge_times+? where user_id = ? ";
 		PreparedStatement pstmt = null;
@@ -306,6 +310,7 @@ public class UserInfo {
 		CommandResult commandResult = db.command(cmd);
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			
@@ -319,7 +324,7 @@ public class UserInfo {
 				pstmt.setInt(1, count);
 				pstmt.setInt(2, times);
 				pstmt.setInt(3, userId);
-				
+				System.out.println(pstmt);
 				pstmt.addBatch();
 			}
 			
@@ -387,6 +392,7 @@ public class UserInfo {
 						gameName = "douniu_join";
 					}
 				}
+				Connection connection = null;
 				String sql = "update user_info set "+gameName+" = "+gameName+"+? where user_id = ? ";
 				PreparedStatement pstmt = null;
 				
@@ -402,7 +408,7 @@ public class UserInfo {
 				
 				String gtTime = DateTimeUtil.getyesterday()+" 00:00:00";
 				String ltTime = DateTimeUtil.getyesterday()+" 23:59:59";
-				BasicDBObject condition = new BasicDBObject("message.game",gameName).append("message.opera_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
+				BasicDBObject condition = new BasicDBObject("message.game",game).append("message.join_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime));
 				if(type == 2){
 					condition.append("message.result", 1);
 				}
@@ -412,6 +418,7 @@ public class UserInfo {
 				CommandResult commandResult = db.command(cmd);
 				
 				try {
+					connection = MysqlConnect.getConnection();
 					connection.setAutoCommit(false);
 					pstmt = connection.prepareStatement(sql);
 					
@@ -423,7 +430,7 @@ public class UserInfo {
 						
 						pstmt.setInt(1, times);
 						pstmt.setInt(2, userId);
-						
+						System.out.println(pstmt);
 						pstmt.addBatch();
 					}
 					
@@ -439,12 +446,13 @@ public class UserInfo {
 					e.printStackTrace();
 				}finally{
 					if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+					if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 				}
 			}
 		}
 		
 		
-		if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+		
 		
 		return null;
 	}
@@ -469,6 +477,9 @@ public class UserInfo {
 	}
 	
 	public static void main(String[] args) {
-		new UserInfo().analysisLevel();
+//		new UserInfo().analysisLevel();
+//		new UserInfo().analysisHuanle();
+		new UserInfo().analysisGameJoin();
+//		new UserInfo().ananlysisRecharge();
 	}
 }

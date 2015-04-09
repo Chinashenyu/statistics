@@ -23,11 +23,9 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class AnalysisHuanLe {
 	
-	private Connection connection;
 	private DB db;
 	
 	public AnalysisHuanLe() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 	}
 	
@@ -107,11 +105,13 @@ public class AnalysisHuanLe {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
 		
 		String sql = " insert into huanle (result_set,type,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			for(int i=1;i<=4;i++){
@@ -132,12 +132,8 @@ public class AnalysisHuanLe {
 			}
 			e.printStackTrace();
 		}finally{
-			try {
-				pstmt.close();
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 	}
 	

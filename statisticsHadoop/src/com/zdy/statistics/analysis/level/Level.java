@@ -23,12 +23,10 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class Level {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	
 	public Level() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -68,10 +66,10 @@ public class Level {
 			for (Object object : retval) {
 				
 				BasicDBObject dbObject = (BasicDBObject) object;
-				String level = "等级"+((int)(double)dbObject.get("message.level"));
+				String level = ((int)(double)dbObject.get("message.level"))+"";
 				Integer count = (int)(double)(dbObject.get("count"));
 				
-				resMap.put(level, count+" 人");
+				resMap.put(level, count+"");
 			}
 			resMap.put("日期", DateTimeUtil.dateCalculate(new Date(), -1));
 		}
@@ -80,13 +78,15 @@ public class Level {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
+		
 		String sql = " insert into level_info (result,date) values (?,?)";
 		PreparedStatement pstmt = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
-//			System.out.println(analysis());
 			pstmt.setString(1, analysis());
 			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
 			
@@ -100,12 +100,8 @@ public class Level {
 			}
 			e.printStackTrace();
 		}finally{
-			try {
-				pstmt.close();
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 	}
 	public static void main(String[] args) {

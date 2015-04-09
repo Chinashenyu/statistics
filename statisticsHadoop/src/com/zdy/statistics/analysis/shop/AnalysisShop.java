@@ -26,10 +26,8 @@ import java.util.Date;
  */
 public class AnalysisShop {
   
-	private Connection connection;
-	
 	public AnalysisShop() {
-		connection = MysqlConnect.getConnection();
+		
 	}
 	
     public int shopSell() throws UnknownHostException{
@@ -58,10 +56,14 @@ public class AnalysisShop {
     }
     
     public void insertResult(int shopSellCount){
+    	Connection connection = null;
+    	
     	String sql = "insert into shop_sell (count,date) values (?,?)";
     	PreparedStatement pstmt = null;
     	try {
+    		connection = MysqlConnect.getConnection();
     		connection.setAutoCommit(false);
+    		
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, shopSellCount);
 			pstmt.setString(2, DateTimeUtil.getyesterday());

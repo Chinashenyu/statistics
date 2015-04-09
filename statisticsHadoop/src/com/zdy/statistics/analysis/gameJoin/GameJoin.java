@@ -23,11 +23,9 @@ import com.zdy.statistics.util.DateTimeUtil;
 public class GameJoin {
 
 	private DB db;
-	private Connection connection;
 	
 	public GameJoin() {
 		db = MongoDBConnector.getDB();
-		connection = MysqlConnect.getConnection();
 	}
 	
 	public String analysisGameTable(int type){
@@ -117,10 +115,13 @@ public class GameJoin {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
+		
 		String sql = " insert into game_join (result_set,type,date) values (?,?,?)";
 		PreparedStatement pstmt = null;
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			for(int i=1;i<=4;i++){

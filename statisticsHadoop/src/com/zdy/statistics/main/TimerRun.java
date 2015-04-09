@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
+import com.zdy.statistics.analysis.common.MysqlConnect;
+
 public class TimerRun {
 
 	private Logger logger = Logger.getLogger(TimerRun.class);
@@ -23,9 +25,6 @@ public class TimerRun {
 	//定时调度
 	public void runScheduled(long initialDelay,long period,TimeUnit timeUnit,final Map<String,String[]> classMap,final Map<String,Object[]> argesMap){
 
-		//线程池
-//		ScheduledExecutorService scheduledService = Executors.newScheduledThreadPool(20);
-		
 		for(Entry<String, String[]> entry : classMap.entrySet()){
 			final String className = entry.getKey();//class name
 			final String[] methodNames = entry.getValue();//called method name;
@@ -53,8 +52,6 @@ public class TimerRun {
 								method.invoke(clas,arges);
 								
 								logger.info(className+" -- "+method.getName()+" : 执行");
-								System.out.println(className+" -- "+method.getName()+" : 执行");
-//								break;
 							}
 						}
 					} catch (Exception e) {

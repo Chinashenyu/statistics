@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 
 import com.mongodb.BasicDBObject;
@@ -16,11 +17,9 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class AnalysisRecharge {
 
-	private Connection connection;
 	private DB db;
 	
 	public AnalysisRecharge() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 	}
 	
@@ -59,28 +58,36 @@ public class AnalysisRecharge {
 	}
 	
 	public int[] findYesterdayRecharge(){
+		Connection connection = null;
 		
 		int totalRecahrgerUsers = 0;
 		int totalIncome = 0;
 		
-		String yesterday = DateTimeUtil.getyesterday();
-		String sql = " select * from recharge_info where date =  "+yesterday;
+		String date = DateTimeUtil.dateCalculate(new Date(), -2);
+		String sql = " select * from recharge_info where date =  '"+date+"'";
+		System.out.println(sql);
+		PreparedStatement pstmt = null;
 		
 		try {
-			PreparedStatement pstmt = connection.prepareStatement(sql);
+			connection = MysqlConnect.getConnection();
+			pstmt = connection.prepareStatement(sql);
 			ResultSet resultset = pstmt.executeQuery();
 			while(resultset.next()){
 				totalRecahrgerUsers = resultset.getInt("total_recharge_users");
 				totalIncome = resultset.getInt("total_income");
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
 		}
 		
 		int[] total = new int[2];
 		total[0] = totalRecahrgerUsers;
 		total[1] = totalIncome;
+		
+		System.out.println(Arrays.toString(total));
 		
 		return total;
 	}
@@ -110,17 +117,17 @@ public class AnalysisRecharge {
 		int totalRecahrgerUsers = dayAnalysis[0] + totalAnalysis[0];
 		int totalIncome = dayAnalysis[1] + totalAnalysis[1];
 		
-		double payRate = 0;
+		double payRate = 0d;
 		if(registerCount != 0){
-			payRate = (totalRecahrgerUsers/registerCount)*100;
+			payRate = ((double)totalRecahrgerUsers/(double)registerCount)*100;
 		}
-		double registerARPU = 0;
+		double registerARPU = 0d;
 		if(registerCount != 0){
-			registerARPU = totalIncome/registerCount;
+			registerARPU = (double)totalIncome/(double)registerCount;
 		}
-		double payARPU = 0;
+		double payARPU = 0d;
 		if(totalRecahrgerUsers != 0){
-			payARPU = totalIncome/totalRecahrgerUsers;
+			payARPU = (double)totalIncome/(double)totalRecahrgerUsers;
 		}
 		
 		//
@@ -132,6 +139,8 @@ public class AnalysisRecharge {
 		result[5] = registerARPU+"";
 		result[6] = payARPU+"";
 		
+		System.out.println(Arrays.toString(result));
+		
 		return result;
 	}
 	
@@ -140,11 +149,16 @@ public class AnalysisRecharge {
 		String[] result = gether();
 		
 		if(result != null && result.length == 7){
+			Connection connection = null;
+			PreparedStatement pstmt = null;
+			
 			String sql = " insert into recharge_info (total_recharge_users,day_recharge_users,total_income,day_income,pay_rate,register_arpu,pay_arpu,date) values (?,?,?,?,?,?,?,?)";
 			
 			try {
+				connection = MysqlConnect.getConnection();
 				connection.setAutoCommit(false);
-				PreparedStatement pstmt = connection.prepareStatement(sql);
+				
+				pstmt = connection.prepareStatement(sql);
 				pstmt.setInt(1, Integer.parseInt(result[0]));
 				pstmt.setInt(2, Integer.parseInt(result[1]));
 				pstmt.setInt(3, Integer.parseInt(result[2]));
@@ -165,6 +179,7 @@ public class AnalysisRecharge {
 				e.printStackTrace();
 			}finally{
 				try {
+					pstmt.close();
 					connection.close();
 				} catch (SQLException e) {
 					e.printStackTrace();

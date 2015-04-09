@@ -18,14 +18,12 @@ import com.zdy.statistics.util.DateTimeUtil;
 
 public class Register {
 
-	private Connection connection;
 	private DB db;
 	private DBCollection collection;
 	
 	private Logger logger = Logger.getLogger(Register.class);
 	
 	public Register() {
-		connection = MysqlConnect.getConnection();
 		db = MongoDBConnector.getDB();
 		collection = db.getCollection("server");
 	}
@@ -87,12 +85,15 @@ public class Register {
 	}
 	
 	public void insertResult(){
+		Connection connection = null;
+		
 		String sql = " insert into register_info (register_count,new_add,total_device,new_device,day_time) select register_count+?,?,?,?-total_device,? from register_info where day_time = ?";
 		PreparedStatement pstmt = null;
 		
 		int[] counts = analysis();
 		
 		try {
+			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
 			pstmt.setInt(1, counts[0]);
