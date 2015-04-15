@@ -179,6 +179,9 @@ public class TimerRun {
 		
 		runScheduled(initialDelayFiveSecond, periodFiveSecond, timeUnitFiveSecond, analysisClassesFiveSecond, argesMapFiveSecond);
 		logger.info("启动每五秒钟定时");
+		
+		//------ 7.在线用户监测线程 --------------------------------------------------------------------------------//
+		
 	}
 	
 	public static void main(String[] args) {
