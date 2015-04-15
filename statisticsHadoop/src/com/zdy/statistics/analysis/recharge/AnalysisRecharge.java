@@ -1,9 +1,11 @@
 package com.zdy.statistics.analysis.recharge;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -98,7 +100,7 @@ public class AnalysisRecharge {
 		
 		
 		BasicDBObject query = new BasicDBObject();
-		query.put("message.type", "register");
+		query.put("message.type", "registe");
         
         DBCursor cur = collection.find(query);
 		
@@ -130,14 +132,15 @@ public class AnalysisRecharge {
 			payARPU = (double)totalIncome/(double)totalRecahrgerUsers;
 		}
 		
+		DecimalFormat df = new DecimalFormat("#.00");
 		//
 		result[0] = totalRecahrgerUsers+"";
 		result[1] = dayAnalysis[0]+"";
 		result[2] = totalIncome+"";
 		result[3] = dayAnalysis[1]+"";
-		result[4] = payRate+"";
-		result[5] = registerARPU+"";
-		result[6] = payARPU+"";
+		result[4] = df.format(payRate);
+		result[5] = df.format(registerARPU);
+		result[6] = df.format(payARPU);
 		
 		System.out.println(Arrays.toString(result));
 		

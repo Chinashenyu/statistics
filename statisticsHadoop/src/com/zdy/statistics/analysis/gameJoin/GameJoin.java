@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.json.JSONObject;
 
@@ -50,22 +51,24 @@ public class GameJoin {
 			group.put("initial", new BasicDBObject("count",0));
 			group.put("$reduce", "function(doc,prev){prev.count += 1;}");
 		}else if(type == 3 || type == 4){
-			group.put("key", new BasicDBObject("message.compete","true").append("message.table_id", "true"));
+			group.put("key", new BasicDBObject("message.competeName","true").append("message.table_id", "true"));
 			group.put("initial", new BasicDBObject("count",0).append("name", ""));
 			group.put("$reduce", "function(doc,prev){prev.count += 1;prev.name = doc.message.competeName}");
 		}
 		
+		String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
+		String ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
 		if(type == 1 || type == 2){
-			String gtTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 00:00:00";
-			String ltTime = DateTimeUtil.dateCalculate(new Date(), -1)+" 23:59:59";
 			group.put("condition", new BasicDBObject("message.type","join")
 			.append("message.join_time", new BasicDBObject("$gte",gtTime).append("$lte", ltTime)));
 		}else if(type == 3 || type == 4){
-			group.put("condition", new BasicDBObject("message.type","join").append("message.compete", new BasicDBObject("$ne",null)));
+			group.put("condition", new BasicDBObject("message.type","join")
+					.append("message.compete", new BasicDBObject("$ne",null))
+					.append("message.join_time", new BasicDBObject("$lte", ltTime)));
 		}
 		
 		cmd.put("group", group);
-//		System.out.println(cmd);
+		System.out.println(cmd);
 		CommandResult cmdResult = db.command(cmd);
 		
 		Map<String,Object> resMap = new HashMap<String, Object>();
@@ -83,11 +86,15 @@ public class GameJoin {
 			Integer key = (int)keyD;
 			
 			String gameName = "";
-			if(gameMap.containsKey(key)){
-				gameName = gameMap.get(key);
+			if(type == 1 || type == 2){
+				if(gameMap.containsKey(key)){
+					gameName = gameMap.get(key);
+				}else{
+					GameContrast.updateGameMap();
+					gameName = gameMap.get(key);
+				}
 			}else{
-				GameContrast.updateGameMap();
-				gameName = gameMap.get(key);
+				gameName = dbObject.getString("name");
 			}
 			
 			if(resMap.containsKey(gameName)){
@@ -95,7 +102,6 @@ public class GameJoin {
 					if(type == 3) gameName = dbObject.getString("name");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+1);
 				}else if(type == 2 || type == 4){
-					if(type == 4) gameName = dbObject.getString("name");
 					resMap.put(gameName, (Integer)resMap.get(gameName)+joinCount);
 				}
 			}else{
@@ -103,15 +109,35 @@ public class GameJoin {
 					if(type == 3) gameName = dbObject.getString("name");
 					resMap.put(gameName, 1);
 				}else if(type == 2 || type == 4){
-					if(type == 4) gameName = dbObject.getString("name");
-					resMap.put(gameName, joinCount);
+					resMap.put(gameName,  joinCount);
 				}
 			}
 			
 		}
 		
-		resMap.put("日期", DateTimeUtil.getyesterday());
-		return JSONObject.fromObject(resMap).toString();
+		if(type == 3){
+			StringBuffer buffer = new StringBuffer();
+			int i = 0;
+			for(Entry<String, Object> entry : resMap.entrySet()){
+				String key = entry.getKey();
+				Object value = entry.getValue();
+				
+				if(i == resMap.size() -1){
+					buffer.append(key+"："+value);
+				}else{
+					buffer.append(key+"："+value+" , ");
+				}
+				i++;
+			}
+			Map<String,String> jsonMap = new HashMap<String, String>();
+			jsonMap.put("content", buffer.toString());
+			jsonMap.put("日期", DateTimeUtil.getyesterday());
+			return JSONObject.fromObject(jsonMap).toString();
+		}else{
+			resMap.put("日期", DateTimeUtil.getyesterday());
+			return JSONObject.fromObject(resMap).toString();
+			
+		}
 	}
 	
 	public void insertResult(){
@@ -155,5 +181,6 @@ public class GameJoin {
 	
 	public static void main(String[] args) {
 		new GameJoin().insertResult();
+//		new GameJoin().analysisGameTable(4);
 	}
 }

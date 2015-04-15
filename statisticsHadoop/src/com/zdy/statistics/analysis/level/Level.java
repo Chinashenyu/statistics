@@ -4,9 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.json.JSONObject;
 
@@ -61,17 +63,25 @@ public class Level {
 		CommandResult commandResult = db.command(cmd);
 		BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
 		
-		Map<String,String> resMap = new HashMap<String, String>();
+		Map<Integer,String> resMap = new TreeMap<Integer, String>(new Comparator<Integer>() {
+
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				
+				return o2.compareTo(o1);
+			}
+			
+		});
 		if(retval != null){
 			for (Object object : retval) {
 				
 				BasicDBObject dbObject = (BasicDBObject) object;
-				String level = ((int)(double)dbObject.get("message.level"))+"";
+				Integer level = ((int)(double)dbObject.get("message.level"));
 				Integer count = (int)(double)(dbObject.get("count"));
 				
 				resMap.put(level, count+"");
 			}
-			resMap.put("日期", DateTimeUtil.dateCalculate(new Date(), -1));
+//			resMap.put("日期", DateTimeUtil.dateCalculate(new Date(), -1));
 		}
 		
 		return JSONObject.fromObject(resMap).toString();
@@ -87,6 +97,7 @@ public class Level {
 			connection = MysqlConnect.getConnection();
 			connection.setAutoCommit(false);
 			pstmt = connection.prepareStatement(sql);
+			System.out.println(analysis());
 			pstmt.setString(1, analysis());
 			pstmt.setString(2, DateTimeUtil.dateCalculate(new Date(), -1));
 			

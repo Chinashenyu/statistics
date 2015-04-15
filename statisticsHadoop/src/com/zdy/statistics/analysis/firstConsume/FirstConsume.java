@@ -78,11 +78,11 @@ public class FirstConsume {
 		if(type == 1){
 			group.put("initial", new BasicDBObject("time","").append("event", 0).append("count", 1));
 			group.put("$reduce", "function(doc,prev){"
-					+ "if(prev.count == 1){"
-						+ "prev.time = doc.message.opera_time;"
-						+ "prev.event = doc.message.event;"
+					+ "if(prev.count == 1 && doc.message.event != 3){"
+							+ "prev.time = doc.message.opera_time;"
+							+ "prev.event = doc.message.event;"
 						+ "}else{"
-							+ "if(prev.time > doc.message.opera_time){ "
+							+ "if(prev.time > doc.message.opera_time  && doc.message.event != 3){ "
 									+ "prev.event = doc.message.event; "
 									+ "prev.time = doc.message.opera_time;"
 							+ "}"
@@ -92,11 +92,11 @@ public class FirstConsume {
 		}else if(type == 2){
 			group.put("initial", new BasicDBObject("time","").append("event", 0).append("count", 1).append("first", ""));
 			group.put("$reduce", "function(doc,prev){"
-					+ "if(prev.count == 1){"
+					+ "if(prev.count == 1 && doc.message.event != 3){"
 						+ "prev.time = doc.message.opera_time;"
 						+ "prev.event = doc.message.event;"
 						+ "}else{"
-							+ "if(prev.event == 3){ "
+							+ "if(prev.event == 3 && doc.message.event != 3){ "
 									+ "prev.first += doc.message.event+'@'; "
 							+ "}"
 							+ "prev.event = doc.message.event;"//
@@ -114,12 +114,13 @@ public class FirstConsume {
 		Map<Integer, String> eventMap = EventContrast.getEventMap();
 		
 		BasicBSONList retval = (BasicBSONList)commandResult.get("retval");
-		int i = 0;
 		for (Object object : retval) {
 			BasicDBObject dbObject = (BasicDBObject)object;
 			if(type == 1){
 				Integer eventId = (int)((double)dbObject.get("event"));
-//				Integer count = dbObject.getInt("count");
+				if(eventId == 0){
+					continue;
+				}
 				if(resMap.containsKey(eventId)){
 					resMap.put(eventId, resMap.get(eventId)+1);
 				}else{
@@ -133,6 +134,9 @@ public class FirstConsume {
 				for (String idStr : eventIdsStr) {
 					if(idStr != null && !"".equals(idStr)){
 						Integer eventId = Integer.parseInt(idStr);
+						if(eventId == 0){
+							continue;
+						}
 						if(resMap.containsKey(eventId)){
 							resMap.put(eventId, resMap.get(eventId)+1);
 						}else{
@@ -191,7 +195,6 @@ public class FirstConsume {
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			e.printStackTrace();

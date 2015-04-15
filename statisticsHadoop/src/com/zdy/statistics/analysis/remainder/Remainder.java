@@ -131,7 +131,10 @@ public class Remainder {
 					BigDecimal bd = new BigDecimal(uid.trim());
 					uid = bd.toPlainString();
 				}
-				in.add(Integer.parseInt(uid.trim()));
+				
+				if(!"".equals(uid)){
+					in.add(Integer.parseInt(uid.trim()));
+				}
 			}
 
 			distinct.put("query",new BasicDBObject("message.type", "login")

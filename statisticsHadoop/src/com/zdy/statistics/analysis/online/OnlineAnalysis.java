@@ -102,7 +102,7 @@ public class OnlineAnalysis {
 		or.add(new BasicDBObject("message.type", "login"));
 		or.add(new BasicDBObject("message.type", "logout"));
 		
-		group.put("$or", or);
+		group.put("condition", new BasicDBObject("$or",or));
 		group.put("finalize", "function(prev){"+
 					"if(prev.isOnline == 0)"+
 						"return null;"+
@@ -121,7 +121,7 @@ public class OnlineAnalysis {
 			}
 		}
 		
-//		System.out.println(onlineMap.size());
+//		System.out.println(onlineMap);
 	}
 	
 	/**
@@ -229,7 +229,7 @@ public class OnlineAnalysis {
 	
 	public static void main(String[] args) {
 		//Online.initAnalysis();
-		new OnlineAnalysis().analysis();
+//		new OnlineAnalysis().analysis();
 		
 //		initAnalysis();
 	}

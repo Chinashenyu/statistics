@@ -58,10 +58,10 @@ public class UserInfo {
 		group.put("key", new BasicDBObject("message.user_id","true"));
 		group.put("initial", new BasicDBObject("sex",0).append("time", "").append("nick_name", ""));
 		group.put("$reduce", "function(doc,prev){"+
-					"if(prev.add_time < doc.message.add_time){"+
-						"prev.count += doc.message.count;"+
+					"if(prev.time < doc.message.add_time){"+
 						"prev.sex = doc.message.sex;"+
-						"prev.nick_name = doc.message.sex;"+
+						"prev.nick_name = doc.message.nick_name;"+
+						"prev.time = doc.message.add_time;"+
 					"}"+
 				"}");
 		
@@ -85,6 +85,8 @@ public class UserInfo {
 				int userId = (int)(double)dbObject.get("message.user_id");
 				
 				pstmt.setInt(1, count);
+				if(nickName == null || "".equals(nickName))
+					continue;
 				pstmt.setString(2, nickName);
 				pstmt.setInt(3, userId);
 				
@@ -479,7 +481,8 @@ public class UserInfo {
 	public static void main(String[] args) {
 //		new UserInfo().analysisLevel();
 //		new UserInfo().analysisHuanle();
-		new UserInfo().analysisGameJoin();
+//		new UserInfo().analysisGameJoin();
 //		new UserInfo().ananlysisRecharge();
+		new UserInfo().userBasicInfo();
 	}
 }

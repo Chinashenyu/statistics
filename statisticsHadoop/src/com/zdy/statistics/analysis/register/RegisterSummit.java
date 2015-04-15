@@ -5,7 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 
+import org.bson.types.BasicBSONList;
+
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -38,53 +41,13 @@ public class RegisterSummit {
 	 */
 	public int analysis(String startTime, String endTime ,boolean isInsertUserInfo){
 		
-		Connection connection = null;
-		
 		BasicDBObject query = new BasicDBObject();
 		
 		query.put("message.type", "registe");
 		query.put("message.registe_time", new BasicDBObject("$gte",startTime).append("$lte", endTime));
 		
 		DBCursor cursor = collection.find(query);
-		int count = collection.find(query).count();
-		
-		if(isInsertUserInfo){
-			String sql = " insert into user_info (user_id,user_name) values (?,?)";
-			PreparedStatement pstmt = null;
-			
-			try {
-				connection = MysqlConnect.getConnection();
-				connection.setAutoCommit(false);
-				
-				pstmt = connection.prepareStatement(sql);
-				
-				while(cursor.hasNext()){
-					DBObject object = cursor.next();
-					DBObject message = (DBObject) object.get("message");
-					int userId = (int)message.get("user_id");
-					String userName = (String) message.get("user_name");
-					
-					pstmt.setInt(1, userId);
-					pstmt.setString(2, userName);
-					
-					pstmt.addBatch();
-				}
-				
-				pstmt.executeBatch();
-				connection.commit();
-				
-			} catch (SQLException e) {
-				try {
-					connection.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-				e.printStackTrace();
-			}finally{
-				if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
-				if(connection != null){try { connection.close(); } catch (SQLException e) { }}
-			}
-		}
+		int count = cursor.count();
 		
 		return count;
 	}
@@ -126,6 +89,22 @@ public class RegisterSummit {
 	
 	/**
 	 * 添加注册用户信息
+	 * //新增用户信息
+		db.runCommand({"group":{
+			"ns":"server",
+			"key":{"message.user_id":true},
+			"initial":{"user_id":0,"user_name":"","nick_name":""},
+			"$reduce":function(doc,prev){
+				if(doc.message.type == "registe"){
+					prev.user_id = doc.message.user_id;
+					prev.user_name = doc.message.user_name;
+					
+				}else{
+					prev.nick_name = doc.message.nick_name;
+				}
+			},
+			"condition":{"$or":[{"message.type":"registe","message.registe_time":{"$gte":"2015-04-14 00:00:00","$lte":"2015-04-14 23:00:00"}},{"message.type":"base_info","message.add_time":{"$gte":"2015-04-14 00:00:00","$lte":"2015-04-14 23:00:00"}}]}
+		}})
 	 */
 	public void insertUserInfo(){
 		
@@ -133,7 +112,73 @@ public class RegisterSummit {
 		String startTime = DateTimeUtil.secondCalculate(now, -5);
 		String endTime = DateTimeUtil.secondCalculate(now, 0);
 		
-		analysis(startTime, endTime,true);
+		BasicDBObject cmd = new BasicDBObject();
+		
+		BasicDBObject group = new BasicDBObject();
+		group.put("ns", "server");
+		group.put("key", new BasicDBObject("message.user_id","true"));
+		group.put("initial", new BasicDBObject("user_id",0).append("user_name", "").append("nick_name", ""));
+		group.put("$reduce", "function(doc,prev){"+
+					"if(doc.message.type == \"registe\"){"+
+						"prev.user_id = doc.message.user_id;"+
+						"prev.user_name = doc.message.user_name;"+
+					"}else if(doc.message.type == \"base_info\"){"+
+						"prev.nick_name = doc.message.nick_name;"+
+					"}"+
+				"}");
+		BasicBSONList orBson = new BasicBSONList();
+		orBson.add(new BasicDBObject("message.type","registe").append("message.registe_time", new BasicDBObject("$gte",startTime).append("$lte", endTime)));
+		orBson.add(new BasicDBObject("message.type","base_info").append("message.add_time", new BasicDBObject("$gte",startTime).append("$lte", endTime)));
+		
+		group.put("condition", new BasicDBObject("$or",orBson));
+		cmd.put("group", group);
+		
+		CommandResult commandResult = db.command(cmd);
+		
+		BasicBSONList retval = (BasicBSONList) commandResult.get("retval");
+		
+		String sql = " insert into user_info (user_id,user_name,nick_name) values (?,?,?)";
+		Connection connection = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			connection = MysqlConnect.getConnection();
+			connection.setAutoCommit(false);
+			
+			pstmt = connection.prepareStatement(sql);
+			
+			for(Object object : retval){
+				DBObject dbObject = (DBObject) object;
+				int userId = (int)(double)dbObject.get("user_id");
+				String userName = (String) dbObject.get("user_name");
+				if(userId == 0 && "".equals(userName)){
+					userId = (int)(double)dbObject.get("message.user_id");
+					userName = "机器人";
+				}
+				String nickName = (String) dbObject.get("nick_name");
+				
+				pstmt.setInt(1, userId);
+				pstmt.setString(2, userName);
+				pstmt.setString(3, nickName);
+				System.out.println(pstmt);
+				pstmt.addBatch();
+			}
+			
+			pstmt.executeBatch();
+			connection.commit();
+			
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){try { pstmt.close(); } catch (SQLException e) { }}
+			if(connection != null){try { connection.close(); } catch (SQLException e) { }}
+		}
+		
 	}
 	
 	public static void main(String[] args) {
