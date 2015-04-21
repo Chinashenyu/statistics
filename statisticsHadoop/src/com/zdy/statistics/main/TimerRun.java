@@ -181,7 +181,18 @@ public class TimerRun {
 		logger.info("启动每五秒钟定时");
 		
 		//------ 7.在线用户监测线程 --------------------------------------------------------------------------------//
+		Map<String,String[]> onlineMoniter = new HashMap<String, String[]>();
+		onlineMoniter.put("com.zdy.statistics.analysis.online.OnlineMoniter", new String[]{"moniterOnlineMap"});
 		
+		Map<String,Object[]> argesOnlineMoniter = new HashMap<String, Object[]>();
+		argesOnlineMoniter.put("com.zdy.statistics.analysis.online.OnlineMoniter", null);
+		
+		long initialDelayMoniter = 1000*60*30;
+		long periodMoniter = 1000*60*30;
+		TimeUnit timeUnitMoniter = TimeUnit.MILLISECONDS;
+		
+		runScheduled(initialDelayMoniter, periodMoniter, timeUnitMoniter, onlineMoniter, argesOnlineMoniter);
+		logger.info("启动六小时在线监测定时器");
 	}
 	
 	public static void main(String[] args) {

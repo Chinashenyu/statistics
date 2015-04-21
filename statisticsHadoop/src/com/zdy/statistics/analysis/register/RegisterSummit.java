@@ -109,8 +109,14 @@ public class RegisterSummit {
 	public void insertUserInfo(){
 		
 		Date now = new Date();
-		String startTime = DateTimeUtil.secondCalculate(now, -5);
-		String endTime = DateTimeUtil.secondCalculate(now, 0);
+		
+		//延时5秒钟 查询注册信息，目的是 多查出 下个时间段的 base_info信息，防止只查出注册信息，而没有base_info 信息           |——————|——————|
+		String startTime = DateTimeUtil.secondCalculate(now, -10);
+		String endTime = DateTimeUtil.secondCalculate(now, -5);
+		
+		//base_info的时间段
+		String baseInfoStartTime = DateTimeUtil.minuteCalculate(now, 10);
+		String baseInfoEndTime = DateTimeUtil.secondCalculate(now, 0);
 		
 		BasicDBObject cmd = new BasicDBObject();
 		
@@ -128,7 +134,7 @@ public class RegisterSummit {
 				"}");
 		BasicBSONList orBson = new BasicBSONList();
 		orBson.add(new BasicDBObject("message.type","registe").append("message.registe_time", new BasicDBObject("$gte",startTime).append("$lte", endTime)));
-		orBson.add(new BasicDBObject("message.type","base_info").append("message.add_time", new BasicDBObject("$gte",startTime).append("$lte", endTime)));
+		orBson.add(new BasicDBObject("message.type","base_info").append("message.add_time", new BasicDBObject("$gte",baseInfoStartTime).append("$lte", baseInfoEndTime)));
 		
 		group.put("condition", new BasicDBObject("$or",orBson));
 		cmd.put("group", group);
